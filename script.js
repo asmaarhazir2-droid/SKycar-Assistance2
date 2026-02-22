@@ -9,6 +9,7 @@ const tabSignup = document.getElementById("tabSignup");
 const title = document.getElementById("login-title");
 const subtitle = document.getElementById("subtitle");
 const storageStatus = document.getElementById("storageStatus");
+const autoLoginAfterSignup = document.getElementById("autoLoginAfterSignup");
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const backToLogin = document.getElementById("backToLogin");
 const sendResetCode = document.getElementById("sendResetCode");
@@ -18,6 +19,7 @@ const phonePattern = /^\+?[0-9]{8,15}$/;
 const STORAGE_KEY = "skyCarAccounts";
 const RESET_CODES_KEY = "skyCarResetCodes";
 const RESET_CODE_TTL_MS = 10 * 60 * 1000;
+const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
 const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
 
 if (storageStatus) {
@@ -203,6 +205,8 @@ loginForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
+
   loginMessage.textContent = `Connexion réussie ✅ Bienvenue ${account.fullName}.`;
   loginMessage.classList.add("success");
   loginForm.reset();
@@ -291,11 +295,32 @@ signupForm.addEventListener("submit", async (event) => {
     password,
   });
   saveAccounts(accounts);
+  localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
+
+  const shouldAutoLogin = Boolean(autoLoginAfterSignup?.checked);
+
+  if (shouldAutoLogin) {
+    signupMessage.textContent = `Compte créé et connexion réussie ✅ Bienvenue ${fullName}.`;
+    signupMessage.classList.add("success");
+    signupForm.reset();
+
+    setTimeout(() => {
+      window.location.href = "tracking.html";
+    }, 500);
+    return;
+  }
 
   signupMessage.textContent = "Compte créé avec succès ✅";
   signupMessage.classList.add("success");
   signupForm.reset();
   setActiveView("login");
+
+  const loginEmailInput = document.getElementById("email");
+  const loginPasswordInput = document.getElementById("password");
+  loginEmailInput.value = normalizedEmail;
+  loginMessage.textContent = "Compte enregistré ✅ Connecte-toi avec ton mot de passe.";
+  loginMessage.classList.add("success");
+  loginPasswordInput.focus();
 });
 
 forgotForm.addEventListener("submit", async (event) => {
@@ -389,3 +414,9 @@ forgotForm.addEventListener("submit", async (event) => {
     setActiveView("login");
   }, 700);
 });
+
+const lastEmail = localStorage.getItem(LAST_EMAIL_KEY);
+if (lastEmail) {
+  const emailInput = document.getElementById("email");
+  emailInput.value = lastEmail;
+}
