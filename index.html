@@ -11,6 +11,7 @@
       <section class="card" aria-labelledby="login-title">
         <h1 id="login-title">Connexion</h1>
         <p class="subtitle" id="subtitle">Accède à ton espace Sky Car Assistance</p>
+        <p class="subtitle" id="storageStatus" aria-live="polite"></p>
 
         <div class="switch" role="tablist" aria-label="Choisir une action">
           <button id="tabLogin" class="switch-btn active" type="button" role="tab" aria-selected="true">
@@ -180,6 +181,9 @@
       </section>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="cloud-sync.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

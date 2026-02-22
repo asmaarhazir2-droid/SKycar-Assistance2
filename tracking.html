@@ -688,6 +688,9 @@
       </section>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="cloud-sync.js"></script>
     <script>
       const MISSION_KEY = "skyCarMissions";
       const DRIVER_KEY = "skyCarDrivers";
@@ -695,6 +698,7 @@
       const PAYMENT_KEY = "skyCarPayments";
       const VEHICLE_KEY = "skyCarCustomVehicles";
       const ASSIGNMENT_KEY = "skyCarAssignments";
+      const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
       const dateElement = document.getElementById("currentDate");
       const missionForm = document.getElementById("missionForm");
       const missionInput = document.getElementById("missionInput");
@@ -1166,6 +1170,7 @@
 
       function saveMissions(missions) {
         localStorage.setItem(MISSION_KEY, JSON.stringify(missions));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function getDrivers() {
@@ -1185,6 +1190,7 @@
 
       function saveDrivers(drivers) {
         localStorage.setItem(DRIVER_KEY, JSON.stringify(drivers));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function getMissionTypes() {
@@ -1204,6 +1210,7 @@
 
       function saveMissionTypes(types) {
         localStorage.setItem(TYPE_KEY, JSON.stringify(types));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function getPayments() {
@@ -1223,6 +1230,7 @@
 
       function savePayments(payments) {
         localStorage.setItem(PAYMENT_KEY, JSON.stringify(payments));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function getCustomVehicles() {
@@ -1242,6 +1250,7 @@
 
       function saveCustomVehicles(customVehicles) {
         localStorage.setItem(VEHICLE_KEY, JSON.stringify(customVehicles));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function getAssignments() {
@@ -1261,6 +1270,7 @@
 
       function saveAssignments(assignments) {
         localStorage.setItem(ASSIGNMENT_KEY, JSON.stringify(assignments));
+        window.skyCloud?.schedulePush?.(300);
       }
 
       function addCustomVehicle(value) {
@@ -1769,6 +1779,7 @@
         }
 
         localStorage.removeItem(ASSIGNMENT_KEY);
+        window.skyCloud?.schedulePush?.(300);
         trackingDriverFilter.value = "";
         trackingDateFilter.value = "";
         renderTrackingData();
@@ -2130,6 +2141,15 @@
       renderVehicles();
       toggleCustomVehicleInput();
       renderAssignmentData();
+      cloudReadyPromise.then(() => {
+        renderMissions();
+        renderDrivers();
+        renderMissionTypes();
+        renderPayments();
+        renderVehicles();
+        renderAssignmentData();
+        renderTrackingData();
+      });
 
       btnDatabase.addEventListener("click", () => showView("database"));
       btnAssign.addEventListener("click", () => showView("assign"));

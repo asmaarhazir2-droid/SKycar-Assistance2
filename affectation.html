@@ -111,9 +111,13 @@
       </section>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="cloud-sync.js"></script>
     <script>
       const MISSION_KEY = "skyCarMissions";
       const DRIVER_KEY = "skyCarDrivers";
+      const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
 
       const missionSelect = document.getElementById("missionSelect");
       const driverSelect = document.getElementById("driverSelect");
@@ -155,17 +159,24 @@
         });
       }
 
-      const missions = getArrayFromStorage(MISSION_KEY);
-      const drivers = getArrayFromStorage(DRIVER_KEY);
+      async function initAffectation() {
+        await cloudReadyPromise;
 
-      fillSelect(missionSelect, missions, "Aucune mission enregistrée");
-      fillSelect(driverSelect, drivers, "Aucun chauffeur enregistré");
+        const missions = getArrayFromStorage(MISSION_KEY);
+        const drivers = getArrayFromStorage(DRIVER_KEY);
 
-      if (missions.length === 0 || drivers.length === 0) {
-        hint.textContent = "Ajoute d'abord des missions et des chauffeurs dans la base de données.";
-      } else {
+        fillSelect(missionSelect, missions, "Aucune mission enregistrée");
+        fillSelect(driverSelect, drivers, "Aucun chauffeur enregistré");
+
+        if (missions.length === 0 || drivers.length === 0) {
+          hint.textContent = "Ajoute d'abord des missions et des chauffeurs dans la base de données.";
+          return;
+        }
+
         hint.textContent = "Sélectionne une mission et un chauffeur dans les listes déroulantes.";
       }
+
+      initAffectation();
     </script>
   </body>
 </html>

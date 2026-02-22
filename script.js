@@ -8,6 +8,7 @@ const tabLogin = document.getElementById("tabLogin");
 const tabSignup = document.getElementById("tabSignup");
 const title = document.getElementById("login-title");
 const subtitle = document.getElementById("subtitle");
+const storageStatus = document.getElementById("storageStatus");
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const backToLogin = document.getElementById("backToLogin");
 const sendResetCode = document.getElementById("sendResetCode");
@@ -17,6 +18,13 @@ const phonePattern = /^\+?[0-9]{8,15}$/;
 const STORAGE_KEY = "skyCarAccounts";
 const RESET_CODES_KEY = "skyCarResetCodes";
 const RESET_CODE_TTL_MS = 10 * 60 * 1000;
+const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
+
+if (storageStatus) {
+  storageStatus.textContent = window.skyCloud?.isConfigured?.()
+    ? "Les données sont stockées dans le cloud et récupérées sur vos autres téléphones."
+    : "Mode local actif: configure cloud-sync.js pour récupérer les données sur d'autres téléphones.";
+}
 
 function normalizePhone(phone) {
   return phone.replace(/[\s()-]/g, "");
@@ -39,6 +47,7 @@ function getAccounts() {
 
 function saveAccounts(accounts) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+  window.skyCloud?.schedulePush?.(300);
 }
 
 function getResetCodes() {
@@ -58,6 +67,7 @@ function getResetCodes() {
 
 function saveResetCodes(resetCodes) {
   localStorage.setItem(RESET_CODES_KEY, JSON.stringify(resetCodes));
+  window.skyCloud?.schedulePush?.(300);
 }
 
 function clearMessages() {
@@ -113,7 +123,8 @@ forgotPasswordLink.addEventListener("click", () => {
 
 backToLogin.addEventListener("click", () => setActiveView("login"));
 
-sendResetCode.addEventListener("click", () => {
+sendResetCode.addEventListener("click", async () => {
+  await cloudReadyPromise;
   const forgotPhoneInput = document.getElementById("forgotPhone");
   const phone = normalizePhone(forgotPhoneInput.value.trim());
 
@@ -148,8 +159,9 @@ sendResetCode.addEventListener("click", () => {
   forgotMessage.classList.add("success");
 });
 
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  await cloudReadyPromise;
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -200,8 +212,9 @@ loginForm.addEventListener("submit", (event) => {
   }, 500);
 });
 
-signupForm.addEventListener("submit", (event) => {
+signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  await cloudReadyPromise;
 
   const fullNameInput = document.getElementById("fullName");
   const emailInput = document.getElementById("signupEmail");
@@ -285,8 +298,9 @@ signupForm.addEventListener("submit", (event) => {
   setActiveView("login");
 });
 
-forgotForm.addEventListener("submit", (event) => {
+forgotForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  await cloudReadyPromise;
 
   const forgotPhoneInput = document.getElementById("forgotPhone");
   const resetCodeInput = document.getElementById("resetCode");
