@@ -389,6 +389,79 @@
         font-size: 2rem;
         font-weight: 700;
       }
+
+      @media (max-width: 1100px) {
+        .database-row {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-form,
+        .driver-form,
+        .type-form,
+        .payment-form {
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .top-title {
+          padding: 16px 12px;
+        }
+
+        .current-date {
+          position: static;
+          display: inline-block;
+          margin: 0 0 10px;
+          font-size: 1rem;
+        }
+
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        .layout {
+          flex-direction: column;
+          min-height: auto;
+        }
+
+        .left-strip {
+          width: 100%;
+          padding: 12px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
+        .db-button {
+          margin-bottom: 0;
+          font-size: 0.92rem;
+          padding: 10px;
+        }
+
+        .white-content {
+          padding: 14px;
+        }
+
+        .assign-row,
+        .tracking-filters {
+          grid-template-columns: 1fr;
+        }
+
+        .tracking-box,
+        .assign-box,
+        .mission-box,
+        .driver-box,
+        .type-box,
+        .payment-box {
+          padding: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .left-strip {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
