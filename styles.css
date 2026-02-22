@@ -1,0 +1,177 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  color: #0f172a;
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 16px 35px rgba(15, 23, 42, 0.12);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 8px 0 24px;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.switch-btn {
+  margin: 0;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.switch-btn:hover {
+  background: #cbd5e1;
+}
+
+.switch-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+input {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.text-btn {
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.text-btn:hover {
+  background: transparent;
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+#forgotPasswordLink {
+  color: #f97316;
+}
+
+#forgotPasswordLink:hover {
+  color: #ea580c;
+}
+
+#backToLogin {
+  color: #f97316;
+}
+
+#backToLogin:hover {
+  color: #ea580c;
+}
+
+#message {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+}
+
+#loginMessage,
+#signupMessage,
+#forgotMessage {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+}
+
+.hidden {
+  display: none;
+}
+
+#message.success {
+  color: #15803d;
+}
+
+#message.error {
+  color: #b91c1c;
+}
+
+#loginMessage.success,
+#signupMessage.success,
+#forgotMessage.success {
+  color: #15803d;
+}
+
+#loginMessage.error,
+#signupMessage.error,
+#forgotMessage.error {
+  color: #b91c1c;
+}

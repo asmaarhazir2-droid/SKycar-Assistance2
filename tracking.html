@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Car Assistance</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #002857;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #ffffff;
+      }
+
+      .page {
+        min-height: 100vh;
+      }
+
+      .top-title {
+        position: relative;
+        padding: 24px 16px 20px;
+      }
+
+      .current-date {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        margin: 0;
+        color: #002857;
+        font-size: 1.35rem;
+        font-weight: 700;
+        background: #ffffff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        animation: blinkWhite 1s infinite;
+      }
+
+      @keyframes blinkWhite {
+        0%,
+        100% {
+          background: #ffffff;
+          opacity: 1;
+        }
+        50% {
+          background: #ffffff;
+          opacity: 0.35;
+        }
+      }
+
+      .layout {
+        display: flex;
+        min-height: calc(100vh - 96px);
+        background: #ffffff;
+      }
+
+      .left-strip {
+        width: 220px;
+        background: #002857;
+        padding: 20px 14px;
+      }
+
+      .db-button {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #002857;
+        font-size: 1rem;
+        font-weight: 700;
+        padding: 12px;
+        cursor: pointer;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        margin-bottom: 10px;
+      }
+
+      .db-button.active {
+        background: #f97316;
+        color: #ffffff;
+      }
+
+      .db-button:not(.danger):active {
+        background: #f97316;
+        color: #ffffff;
+      }
+
+      .db-button.danger {
+        background: #dc2626;
+        color: #ffffff;
+      }
+
+      .white-content {
+        flex: 1;
+        padding: 26px;
+      }
+
+      .database-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        max-width: 1420px;
+      }
+
+      .view.hidden {
+        display: none;
+      }
+
+      .mission-box,
+      .driver-box,
+      .type-box,
+      .payment-box {
+        width: 100%;
+        border: 1px solid #dbe1ea;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+
+      .mission-box h2,
+      .driver-box h2,
+      .type-box h2,
+      .payment-box h2 {
+        margin: 0 0 14px;
+        color: #002857;
+        font-size: 1.2rem;
+      }
+
+      .mission-form,
+      .driver-form,
+      .type-form,
+      .payment-form {
+        display: flex;
+        gap: 10px;
+      }
+
+      .mission-form input,
+      .driver-form input,
+      .type-form input,
+      .payment-form input {
+        flex: 1;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+
+      .mission-form button,
+      .driver-form button,
+      .type-form button,
+      .payment-form button {
+        border: none;
+        border-radius: 10px;
+        background: #002857;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+
+      .mission-message,
+      .driver-message,
+      .type-message,
+      .payment-message {
+        min-height: 1.3em;
+        margin: 10px 0 0;
+        color: #002857;
+        font-size: 0.9rem;
+      }
+
+      .mission-list,
+      .driver-list,
+      .type-list,
+      .payment-list {
+        margin: 14px 0 0;
+        padding-left: 20px;
+        color: #002857;
+      }
+
+      .mission-list li,
+      .driver-list li,
+      .type-list li,
+      .payment-list li {
+        margin-bottom: 8px;
+      }
+
+      .list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .item-text {
+        overflow-wrap: anywhere;
+      }
+
+      .item-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .item-btn {
+        border: none;
+        border-radius: 8px;
+        background: #002857;
+        color: #ffffff;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 6px 9px;
+        cursor: pointer;
+      }
+
+      .item-btn.delete {
+        background: #b91c1c;
+      }
+
+      .assign-box {
+        max-width: 700px;
+        border: 1px solid #dbe1ea;
+        border-radius: 12px;
+        padding: 18px;
+      }
+
+      .assign-box h2 {
+        margin: 0 0 14px;
+        color: #002857;
+        font-size: 1.2rem;
+      }
+
+      .location-title {
+        margin: 0 0 12px;
+        color: #f97316;
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .assign-field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      .assign-field label {
+        color: #002857;
+        font-weight: 600;
+      }
+
+      .assign-field select {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+
+      .assign-field input {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+
+      .invalid-field {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+      }
+
+      .assign-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .city-note {
+        margin: 0;
+        color: #002857;
+        font-size: 0.9rem;
+      }
+
+      .assign-hint {
+        margin: 0;
+        color: #002857;
+        font-size: 0.92rem;
+      }
+
+      .assign-hint.success {
+        color: #15803d;
+      }
+
+      .assign-hint.error {
+        color: #b91c1c;
+      }
+
+      .save-btn {
+        border: none;
+        border-radius: 10px;
+        background: #002857;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 10px 16px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .tracking-box {
+        max-width: 1200px;
+        border: 1px solid #dbe1ea;
+        border-radius: 12px;
+        padding: 18px;
+      }
+
+      .tracking-box h2 {
+        margin: 0 0 14px;
+        color: #002857;
+        font-size: 1.2rem;
+      }
+
+      .tracking-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .tracking-filter {
+        display: grid;
+        gap: 6px;
+      }
+
+      .tracking-filter label {
+        color: #002857;
+        font-weight: 600;
+      }
+
+      .tracking-filter select {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+
+      .tracking-actions {
+        margin-bottom: 14px;
+      }
+
+      .export-btn {
+        border: none;
+        border-radius: 10px;
+        background: #002857;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 10px 16px;
+        cursor: pointer;
+      }
+
+      .tracking-table-wrap {
+        overflow-x: auto;
+      }
+
+      .tracking-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #002857;
+        font-size: 0.9rem;
+      }
+
+      .tracking-table th,
+      .tracking-table td {
+        border: 1px solid #dbe1ea;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .tracking-table th {
+        background: #f1f5f9;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 0;
+        color: #ffffff;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="top-title">
+        <p id="currentDate" class="current-date" aria-live="polite"></p>
+        <h1>Welcome to Sky Car assistance</h1>
+      </section>
+
+      <section class="layout">
+        <aside class="left-strip">
+          <button id="btnDatabase" class="db-button active" type="button">Base de données</button>
+          <button id="btnAssign" class="db-button" type="button">Ajout mission</button>
+          <button id="btnTracking" class="db-button" type="button">Historique des missions</button>
+          <button id="btnDeleteData" class="db-button danger" type="button">Supprimer data</button>
+          <button id="btnLogout" class="db-button" type="button">Déconnexion</button>
+        </aside>
+
+        <section class="white-content">
+          <section id="databaseView" class="view">
+            <div class="database-row">
+              <div class="mission-box">
+                <h2>Ajouter la mission</h2>
+
+                <form id="missionForm" class="mission-form" novalidate>
+                  <input
+                    id="missionInput"
+                    type="text"
+                    placeholder="Ex: Remorquage véhicule - Paris"
+                    required
+                  />
+                  <button type="submit">Ajouter</button>
+                </form>
+
+                <p id="missionMessage" class="mission-message" aria-live="polite"></p>
+                <ol id="missionList" class="mission-list"></ol>
+              </div>
+
+              <div class="type-box">
+                <h2>Ajouter type de missions</h2>
+
+                <form id="typeForm" class="type-form" novalidate>
+                  <input
+                    id="typeInput"
+                    type="text"
+                    placeholder="Ex: Dépannage batterie"
+                    required
+                  />
+                  <button type="submit">Ajouter</button>
+                </form>
+
+                <p id="typeMessage" class="type-message" aria-live="polite"></p>
+                <ol id="typeList" class="type-list"></ol>
+              </div>
+            </div>
+
+            <div class="database-row">
+              <div class="driver-box">
+                <h2>Ajouter chauffeur</h2>
+
+                <form id="driverForm" class="driver-form" novalidate>
+                  <input
+                    id="driverInput"
+                    type="text"
+                    placeholder="Ex: Jean Dupont"
+                    required
+                  />
+                  <button type="submit">Ajouter</button>
+                </form>
+
+                <p id="driverMessage" class="driver-message" aria-live="polite"></p>
+                <ol id="driverList" class="driver-list"></ol>
+              </div>
+
+              <div class="payment-box">
+                <h2>Ajouter paiement</h2>
+
+                <form id="paymentForm" class="payment-form" novalidate>
+                  <input
+                    id="paymentInput"
+                    type="text"
+                    placeholder="Ex: Virement bancaire"
+                    required
+                  />
+                  <button type="submit">Ajouter</button>
+                </form>
+
+                <p id="paymentMessage" class="payment-message" aria-live="polite"></p>
+                <ol id="paymentList" class="payment-list"></ol>
+              </div>
+            </div>
+          </section>
+
+          <section id="assignView" class="view hidden">
+            <div class="assign-box">
+              <h2>Ajout mission</h2>
+
+              <div class="assign-row">
+                <div class="assign-field">
+                  <label for="missionSelect">Choisir la mission</label>
+                  <select id="missionSelect"></select>
+                </div>
+
+                <div class="assign-field">
+                  <label for="missionTypeSelect">Choisir le type de mission</label>
+                  <select id="missionTypeSelect"></select>
+                </div>
+              </div>
+
+              <div class="assign-row">
+                <div class="assign-field">
+                  <label for="driverSelect">Choisir le chauffeur</label>
+                  <select id="driverSelect"></select>
+                </div>
+
+                <div class="assign-field">
+                  <label for="paymentSelect">Choisir le paiement</label>
+                  <select id="paymentSelect"></select>
+                </div>
+              </div>
+
+              <h3 class="location-title">Localisation</h3>
+
+              <div class="assign-field">
+                <label for="citySelect">Choisir la ville</label>
+                <select id="citySelect"></select>
+              </div>
+
+              <div class="assign-field">
+                <label for="districtInput">Choisir le quartier</label>
+                <input id="districtInput" type="text" placeholder="Écrire le quartier" />
+              </div>
+
+              <h3 class="location-title">Destination</h3>
+
+              <div class="assign-row">
+                <div class="assign-field">
+                  <label for="destinationCitySelect">Choisir la ville de destination</label>
+                  <select id="destinationCitySelect"></select>
+                </div>
+
+                <div class="assign-field">
+                  <label for="vehicleSelect">Choisir véhicule</label>
+                  <select id="vehicleSelect"></select>
+                  <input
+                    id="customVehicleInput"
+                    type="text"
+                    placeholder="Écrire le véhicule non listé"
+                    hidden
+                  />
+                </div>
+              </div>
+
+              <div class="assign-row">
+                <div class="assign-field">
+                  <label for="vehiclePlateInput">Matricule</label>
+                  <input id="vehiclePlateInput" type="text" placeholder="Ex: 12345-A-6" />
+                </div>
+
+                <div class="assign-field">
+                  <label for="priceInput">Prix</label>
+                  <input id="priceInput" type="text" placeholder="Ex: 450 MAD" />
+                </div>
+              </div>
+
+              <button id="saveAssignmentBtn" class="save-btn" type="button">Enregistrer</button>
+
+              <p id="cityNote" class="city-note"></p>
+              <p id="assignHint" class="assign-hint"></p>
+            </div>
+          </section>
+
+          <section id="trackingView" class="view hidden">
+            <div class="tracking-box">
+              <h2>Historique des missions</h2>
+
+              <div class="tracking-filters">
+                <div class="tracking-filter">
+                  <label for="trackingDriverFilter">Filtrer par chauffeur</label>
+                  <select id="trackingDriverFilter">
+                    <option value="">Tous les chauffeurs</option>
+                  </select>
+                </div>
+
+                <div class="tracking-filter">
+                  <label for="trackingDateFilter">Filtrer par date</label>
+                  <select id="trackingDateFilter">
+                    <option value="">Toutes les dates</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="tracking-actions">
+                <button id="exportTrackingBtn" class="export-btn" type="button">
+                  Exporter data (Excel)
+                </button>
+              </div>
+
+              <div class="tracking-table-wrap">
+                <table class="tracking-table">
+                  <thead>
+                    <tr>
+                      <th>Type de mission</th>
+                      <th>Mission</th>
+                      <th>Chauffeur</th>
+                      <th>Ville</th>
+                      <th>Quartier</th>
+                      <th>Destination</th>
+                      <th>Véhicule</th>
+                      <th>Matricule</th>
+                      <th>Prix</th>
+                      <th>Paiement</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trackingTableBody"></tbody>
+                </table>
+              </div>
+
+              <p id="trackingEmpty" class="assign-hint"></p>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const MISSION_KEY = "skyCarMissions";
+      const DRIVER_KEY = "skyCarDrivers";
+      const TYPE_KEY = "skyCarMissionTypes";
+      const PAYMENT_KEY = "skyCarPayments";
+      const VEHICLE_KEY = "skyCarCustomVehicles";
+      const ASSIGNMENT_KEY = "skyCarAssignments";
+      const dateElement = document.getElementById("currentDate");
+      const missionForm = document.getElementById("missionForm");
+      const missionInput = document.getElementById("missionInput");
+      const missionMessage = document.getElementById("missionMessage");
+      const missionList = document.getElementById("missionList");
+      const driverForm = document.getElementById("driverForm");
+      const driverInput = document.getElementById("driverInput");
+      const driverMessage = document.getElementById("driverMessage");
+      const driverList = document.getElementById("driverList");
+      const typeForm = document.getElementById("typeForm");
+      const typeInput = document.getElementById("typeInput");
+      const typeMessage = document.getElementById("typeMessage");
+      const typeList = document.getElementById("typeList");
+      const paymentForm = document.getElementById("paymentForm");
+      const paymentInput = document.getElementById("paymentInput");
+      const paymentMessage = document.getElementById("paymentMessage");
+      const paymentList = document.getElementById("paymentList");
+      const btnDatabase = document.getElementById("btnDatabase");
+      const btnAssign = document.getElementById("btnAssign");
+      const btnTracking = document.getElementById("btnTracking");
+      const btnDeleteData = document.getElementById("btnDeleteData");
+      const btnLogout = document.getElementById("btnLogout");
+      const databaseView = document.getElementById("databaseView");
+      const assignView = document.getElementById("assignView");
+      const trackingView = document.getElementById("trackingView");
+      const missionTypeSelect = document.getElementById("missionTypeSelect");
+      const missionSelect = document.getElementById("missionSelect");
+      const driverSelect = document.getElementById("driverSelect");
+      const paymentSelect = document.getElementById("paymentSelect");
+      const assignHint = document.getElementById("assignHint");
+      const citySelect = document.getElementById("citySelect");
+      const districtInput = document.getElementById("districtInput");
+      const destinationCitySelect = document.getElementById("destinationCitySelect");
+      const vehicleSelect = document.getElementById("vehicleSelect");
+      const customVehicleInput = document.getElementById("customVehicleInput");
+      const vehiclePlateInput = document.getElementById("vehiclePlateInput");
+      const priceInput = document.getElementById("priceInput");
+      const saveAssignmentBtn = document.getElementById("saveAssignmentBtn");
+      const trackingTableBody = document.getElementById("trackingTableBody");
+      const trackingEmpty = document.getElementById("trackingEmpty");
+      const trackingDriverFilter = document.getElementById("trackingDriverFilter");
+      const trackingDateFilter = document.getElementById("trackingDateFilter");
+      const exportTrackingBtn = document.getElementById("exportTrackingBtn");
+      const cityNote = document.getElementById("cityNote");
+      const now = new Date();
+      const vehicles = [
+        "Dacia Logan",
+        "Dacia Sandero",
+        "Dacia Duster",
+        "Renault Clio",
+        "Renault Megane",
+        "Peugeot 208",
+        "Peugeot 308",
+        "Citroen C3",
+        "Hyundai i20",
+        "Hyundai Tucson",
+        "Kia Sportage",
+        "Toyota Yaris",
+        "Toyota Corolla",
+        "Volkswagen Golf",
+        "Volkswagen Passat",
+        "BMW Série 1",
+        "BMW Série 3",
+        "Mercedes Classe A",
+        "Mercedes Classe C",
+        "Audi A3",
+        "Audi A4",
+        "Nissan Qashqai",
+        "Ford Focus",
+        "Skoda Octavia",
+        "Dacia Lodgy",
+        "Dacia Dokker",
+        "Dacia Jogger",
+        "Renault Twingo",
+        "Renault Captur",
+        "Renault Kadjar",
+        "Renault Arkana",
+        "Renault Koleos",
+        "Renault Austral",
+        "Renault Scenic",
+        "Peugeot 2008",
+        "Peugeot 3008",
+        "Peugeot 5008",
+        "Peugeot Partner",
+        "Peugeot Rifter",
+        "Citroen C1",
+        "Citroen C4",
+        "Citroen C5 Aircross",
+        "Citroen Berlingo",
+        "Citroen Jumper",
+        "Hyundai i10",
+        "Hyundai i30",
+        "Hyundai Elantra",
+        "Hyundai Santa Fe",
+        "Hyundai Kona",
+        "Hyundai Accent",
+        "Kia Picanto",
+        "Kia Rio",
+        "Kia Ceed",
+        "Kia Sorento",
+        "Kia Niro",
+        "Toyota Aygo",
+        "Toyota C-HR",
+        "Toyota RAV4",
+        "Toyota Hilux",
+        "Toyota Land Cruiser",
+        "Toyota Prius",
+        "Volkswagen Polo",
+        "Volkswagen Tiguan",
+        "Volkswagen Touareg",
+        "Volkswagen T-Roc",
+        "Volkswagen Caddy",
+        "Volkswagen Transporter",
+        "BMW Série 2",
+        "BMW Série 4",
+        "BMW Série 5",
+        "BMW X1",
+        "BMW X3",
+        "BMW X5",
+        "Mercedes Classe B",
+        "Mercedes GLA",
+        "Mercedes GLC",
+        "Mercedes GLE",
+        "Mercedes Vito",
+        "Mercedes Sprinter",
+        "Audi A1",
+        "Audi Q2",
+        "Audi Q3",
+        "Audi Q5",
+        "Audi A5",
+        "Audi A6",
+        "Nissan Micra",
+        "Nissan Juke",
+        "Nissan X-Trail",
+        "Nissan Patrol",
+        "Nissan Navara",
+        "Ford Fiesta",
+        "Ford Puma",
+        "Ford Kuga",
+        "Ford Ranger",
+        "Ford Transit",
+        "Skoda Fabia",
+        "Skoda Superb",
+        "Skoda Karoq",
+        "Skoda Kodiaq",
+        "SEAT Ibiza",
+        "SEAT Leon",
+        "SEAT Ateca",
+        "Cupra Formentor",
+        "Opel Corsa",
+        "Opel Astra",
+        "Opel Crossland",
+        "Opel Grandland",
+        "Fiat 500",
+        "Fiat Panda",
+        "Fiat Tipo",
+        "Fiat Doblo",
+        "Fiat Ducato",
+        "Jeep Renegade",
+        "Jeep Compass",
+        "Jeep Wrangler",
+        "Land Rover Defender",
+        "Land Rover Discovery",
+        "Range Rover Evoque",
+        "Range Rover Sport",
+        "Volvo XC40",
+        "Volvo XC60",
+        "Volvo XC90",
+        "Volvo S60",
+        "Volvo S90",
+        "Mazda 2",
+        "Mazda 3",
+        "Mazda CX-3",
+        "Mazda CX-5",
+        "Mazda CX-60",
+        "Honda Civic",
+        "Honda Accord",
+        "Honda CR-V",
+        "Honda HR-V",
+        "Suzuki Swift",
+        "Suzuki Vitara",
+        "Suzuki S-Cross",
+        "Suzuki Jimny",
+        "Mitsubishi L200",
+        "Mitsubishi Outlander",
+        "Mitsubishi ASX",
+        "Subaru Forester",
+        "Subaru XV",
+        "Subaru Outback",
+        "Tesla Model 3",
+        "Tesla Model Y",
+        "Tesla Model S",
+        "Tesla Model X",
+        "BYD Atto 3",
+        "BYD Dolphin",
+        "MG ZS",
+        "MG HS",
+        "Chery Tiggo 2",
+        "Chery Tiggo 7",
+        "Geely Coolray",
+        "Haval H6",
+        "Great Wall Poer",
+        "Isuzu D-Max",
+        "Chevrolet Spark",
+        "Chevrolet Captiva",
+        "Chevrolet Silverado",
+        "GMC Yukon",
+        "Cadillac Escalade",
+        "Porsche Macan",
+        "Porsche Cayenne",
+        "Porsche 911",
+        "Lexus UX",
+        "Lexus NX",
+        "Lexus RX",
+        "Infiniti Q50",
+        "Infiniti QX50",
+        "Mini Cooper",
+        "Mini Countryman",
+        "Alfa Romeo Giulia",
+        "Alfa Romeo Stelvio",
+        "DS 3",
+        "DS 7",
+        "Bugatti Chiron",
+        "Ferrari Roma",
+        "Lamborghini Urus",
+        "Maserati Levante",
+        "Aston Martin DBX",
+        "Bentley Bentayga",
+        "Rolls-Royce Cullinan",
+        "Rolls-Royce Ghost",
+        "Rolls-Royce Phantom",
+        "Bentley Continental GT",
+        "Bentley Flying Spur",
+        "Aston Martin Vantage",
+        "Aston Martin DB11",
+        "Maserati Ghibli",
+        "Maserati Quattroporte",
+        "Maserati Grecale",
+        "Lamborghini Huracan",
+        "Lamborghini Aventador",
+        "Ferrari 488",
+        "Ferrari F8 Tributo",
+        "Ferrari SF90",
+        "McLaren 720S",
+        "McLaren Artura",
+        "Bugatti Veyron",
+        "Porsche Panamera",
+        "Porsche Taycan",
+        "Porsche 718 Cayman",
+        "Porsche 718 Boxster",
+        "Jaguar XE",
+        "Jaguar XF",
+        "Jaguar F-Pace",
+        "Jaguar E-Pace",
+        "Jaguar I-Pace",
+        "Lexus IS",
+        "Lexus ES",
+        "Lexus LS",
+        "Lexus LX",
+        "Lexus GX",
+        "Lexus RC",
+        "Infiniti QX60",
+        "Infiniti QX80",
+        "Acura MDX",
+        "Acura RDX",
+        "Genesis G70",
+        "Genesis G80",
+        "Genesis GV70",
+        "Genesis GV80",
+        "Chevrolet Malibu",
+        "Chevrolet Impala",
+        "Chevrolet Cruze",
+        "Chevrolet Tahoe",
+        "Chevrolet Suburban",
+        "Chevrolet Trailblazer",
+        "Chevrolet Blazer",
+        "Chevrolet Camaro",
+        "Chevrolet Corvette",
+        "GMC Terrain",
+        "GMC Acadia",
+        "GMC Sierra",
+        "Cadillac CT4",
+        "Cadillac CT5",
+        "Cadillac XT4",
+        "Cadillac XT5",
+        "Cadillac XT6",
+        "Ford Explorer",
+        "Ford Edge",
+        "Ford Bronco",
+        "Ford Mustang",
+        "Ford F-150",
+        "Ford Escape",
+        "Lincoln Navigator",
+        "Lincoln Aviator",
+        "Lincoln Corsair",
+        "Ram 1500",
+        "Ram 2500",
+        "Dodge Charger",
+        "Dodge Challenger",
+        "Dodge Durango",
+        "Chrysler 300",
+        "Jeep Grand Cherokee",
+        "Jeep Wagoneer",
+        "Jeep Gladiator",
+        "Toyota Camry",
+        "Toyota Avalon",
+        "Toyota Fortuner",
+        "Toyota Prado",
+        "Toyota Sequoia",
+        "Toyota Tacoma",
+        "Toyota Tundra",
+        "Honda City",
+        "Honda Jazz",
+        "Honda Pilot",
+        "Honda Odyssey",
+        "Honda Passport",
+        "Nissan Sentra",
+        "Nissan Altima",
+        "Nissan Pathfinder",
+        "Nissan Armada",
+        "Nissan Sunny",
+        "Nissan Leaf",
+        "Mazda 6",
+        "Mazda CX-30",
+        "Mazda CX-50",
+        "Mazda MX-5",
+        "Mitsubishi Pajero",
+        "Mitsubishi Pajero Sport",
+        "Mitsubishi Mirage",
+        "Mitsubishi Eclipse Cross",
+        "Suzuki Baleno",
+        "Suzuki Ertiga",
+        "Suzuki Celerio",
+        "Suzuki Dzire",
+        "Subaru Impreza",
+        "Subaru Legacy",
+        "Subaru WRX",
+        "Subaru BRZ",
+        "Volkswagen Jetta",
+        "Volkswagen Arteon",
+        "Volkswagen ID.3",
+        "Volkswagen ID.4",
+        "Volkswagen Amarok",
+        "Volkswagen Crafter",
+        "Audi Q7",
+        "Audi Q8",
+        "Audi e-tron",
+        "Audi RS3",
+        "Audi RS6",
+        "BMW i3",
+        "BMW i4",
+        "BMW iX",
+        "BMW M3",
+        "BMW M5",
+        "BMW X6",
+        "BMW X7",
+        "Mercedes CLA",
+        "Mercedes CLS",
+        "Mercedes EQA",
+        "Mercedes EQB",
+        "Mercedes EQE",
+        "Mercedes EQS",
+        "Mercedes Classe E",
+        "Mercedes Classe S",
+        "Mercedes GLB",
+        "Mercedes GLS",
+        "SEAT Arona",
+        "SEAT Tarraco",
+        "Skoda Scala",
+        "Skoda Kamiq",
+        "Skoda Enyaq",
+        "Opel Mokka",
+        "Opel Insignia",
+        "Opel Combo",
+        "Fiat 500X",
+        "Fiat 500L",
+        "Fiat Fiorino",
+        "Fiat Scudo",
+        "Fiat Talento",
+        "Citroen Jumpy",
+        "Citroen C-Elysee",
+        "Peugeot 301",
+        "Peugeot 508",
+        "Peugeot Expert",
+        "Renault Kangoo",
+        "Renault Trafic",
+        "Renault Master",
+        "Renault Express",
+        "Dacia Spring",
+        "DS 4",
+        "DS 9",
+        "Alfa Romeo Tonale",
+        "Alfa Romeo Giulietta",
+        "Mini Clubman",
+        "Mini Paceman",
+        "Mini Cabrio",
+        "Tesla Cybertruck",
+        "Tesla Roadster",
+        "BYD Han",
+        "BYD Tang",
+        "BYD Seal",
+        "MG 5",
+        "MG 4",
+        "MG RX5",
+        "Chery Arrizo 5",
+        "Chery Tiggo 8",
+        "Geely Emgrand",
+        "Geely Atlas",
+        "Haval Jolion",
+        "Haval H9",
+        "Great Wall Wingle",
+        "Isuzu MU-X",
+        "Isuzu NPR",
+        "Man TGE",
+        "Iveco Daily",
+        "Mercedes Actros",
+        "Volvo FH",
+        "Camion dépanneuse",
+        "Camion plateau",
+        "Camion atelier",
+        "Fourgon assistance",
+        "Véhicule léger assistance",
+        "Moto assistance"
+      ];
+      const moroccoCities = [
+        "Agadir", "Ahfir", "Ain Aouda", "Ain Attig", "Ain Bni Mathar", "Ain Cheggag", "Ain Dorij", "Ain El Aouda", "Ain Harrouda", "Ain Jemaa", "Ain Karma", "Ain Leuh", "Ain Mediouna", "Ain Taoujdate", "Ait Baha", "Ait Iaaza", "Ait Melloul", "Ait Ourir", "Akka", "Aklim", "Al Hoceima", "Amizmiz", "Arfoud", "Asilah", "Assa", "Azemmour", "Azilal", "Azrou", "Bab Berred", "Bab Taza", "Beni Ansar", "Beni Bouayach", "Beni Mellal", "Bensergao", "Benslimane", "Berkane", "Berrechid", "Bir Jdid", "Bouarfa", "Boufakrane", "Bouguedra", "Bouizakarne", "Bouskoura", "Bouznika", "Bradia", "Casablanca", "Chefchaouen", "Dakhla", "Dar Bouazza", "Demnate", "Driouch", "Drarga", "El Hajeb", "El Jadida", "El Ksiba", "Erfoud", "Errachidia", "Essaouira", "Fes", "Figuig", "Fnideq", "Fquih Ben Salah", "Goulmima", "Guelmim", "Guercif", "Had Kourt", "Haj Kaddour", "Imzouren", "Inezgane", "Jerada", "Jorf El Melha", "Kariat Arekmane", "Kasba Tadla", "Kelaa des Sraghna", "Kenitra", "Khemisset", "Khenifra", "Khouribga", "Ksar El Kebir", "Laayoune", "Larache", "M'diq", "Marrakech", "Martil", "Mechra Bel Ksiri", "Mediouna", "Meknes", "Midelt", "Missour", "Mohammedia", "Moulay Bousselham", "Mrirt", "Nador", "Ouarzazate", "Oued Zem", "Ouezzane", "Oujda", "Rabat", "Rich", "Safi", "Sale", "Sefrou", "Settat", "Sidi Bennour", "Sidi Ifni", "Sidi Kacem", "Sidi Rahal", "Sidi Slimane", "Skhirat", "Souk El Arbaa", "Souss-Massa", "Taifalte", "Tahla", "Taliouine", "Tan-Tan", "Tangier", "Taounate", "Taourirt", "Taroudant", "Taza", "Temara", "Tendrara", "Tetouan", "Tiflet", "Tinghir", "Tiznit", "Youssoufia", "Zagora", "Zaio", "Zeghanghane"
+      ];
+      const districtsByCity = {
+        Casablanca: ["Anfa", "Maarif", "Ain Chock", "Sidi Bernoussi", "Hay Hassani", "Sbata", "Mers Sultan", "Roches Noires", "Sidi Othmane", "Ain Sebaa"],
+        Rabat: ["Agdal", "Hassan", "Souissi", "Hay Riad", "Yacoub El Mansour", "Océan", "Akkari", "Takaddoum", "Aviation", "L'Océan"],
+        Sale: ["Tabriquet", "Bettana", "Hay Salam", "Sidi Moussa", "Bab Lamrissa", "Laayayda", "Kariat Oulad Moussa", "Sidi Abdellah"],
+        Marrakech: ["Gueliz", "Medina", "Hivernage", "Daoudiate", "Sidi Youssef Ben Ali", "Mhamid", "Massira", "Targa", "Amerchich", "Izdihar"],
+        Fes: ["Fes El Bali", "Fes Jdid", "Saiss", "Zouagha", "Narjiss", "Bensouda", "Route Immouzer", "Atlas", "Mont Fleuri"],
+        Meknes: ["Hamria", "Ville Nouvelle", "Bassatine", "Marjane", "Ouislane", "Sidi Bouzekri", "El Menzeh", "Riyad"],
+        Agadir: ["Talborjt", "Dakhla", "Hay Mohammadi", "Anza", "Founty", "Bensergao", "Charaf", "Tilila", "Illigh"],
+        Oujda: ["Sidi Yahya", "Hay Al Qods", "Lazaret", "Hay Al Andalous", "Sidi Ziane", "Ain Sfa", "El Qods", "Al Fath"],
+        Tangier: ["Malabata", "Marshan", "Mghogha", "Beni Makada", "Iberia", "Dradeb", "Branes", "Souani", "Mesnana"],
+        Tetouan: ["Ensanche", "Saniat Rmel", "Mhannech", "Jamaa Mezouak", "Mellah", "Ain Bouanane", "Karyane", "Boujarrah"],
+        Kenitra: ["Mimosas", "Val Fleuri", "Saknia", "Maamora", "La Ville Haute", "Bir Rami", "Maghreb Arabi", "Oulad Oujih"],
+        Temara: ["Massira", "Wifaq", "Hay Nahda", "Skikina", "Mers El Kheir", "Al Menzeh", "Guich Oudaya", "Tamesna"],
+        Nador: ["Hay Al Matar", "Selouane", "Aarid", "Beni Ansar", "Hay Al Jadid", "Ichomay", "Ihaddaden", "Al Kindi"],
+        "El Jadida": ["Sidi Bouzid", "Cité Portugaise", "Hay Salam", "Najd", "Mouilha", "Al Qods", "Doukkala", "Saada"],
+        Safi: ["Biad", "Lalla Hnia", "Sidi Bouzid", "Azib Derai", "Quartier Industriel", "Anas", "Beddouza", "Miftah El Khair"],
+        Mohammedia: ["Alia", "Parc", "Wafa", "Nassim", "El Fath", "Riyad Salam", "Hay Hassani", "Mimosa"],
+        "Beni Mellal": ["Ain Asserdoun", "Hay Salam", "Hay Atlas", "Dchar Jdid", "Mghila", "Riad Salam", "Oulad Hamdane"],
+        Khouribga: ["Al Qods", "Hay Hassani", "L'OCP", "Hay El Farah", "Boulanouar", "Sidi Chennane", "Al Massira"],
+      };
+
+      dateElement.textContent = now.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+
+      function getMissions() {
+        const raw = localStorage.getItem(MISSION_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveMissions(missions) {
+        localStorage.setItem(MISSION_KEY, JSON.stringify(missions));
+      }
+
+      function getDrivers() {
+        const raw = localStorage.getItem(DRIVER_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveDrivers(drivers) {
+        localStorage.setItem(DRIVER_KEY, JSON.stringify(drivers));
+      }
+
+      function getMissionTypes() {
+        const raw = localStorage.getItem(TYPE_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveMissionTypes(types) {
+        localStorage.setItem(TYPE_KEY, JSON.stringify(types));
+      }
+
+      function getPayments() {
+        const raw = localStorage.getItem(PAYMENT_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function savePayments(payments) {
+        localStorage.setItem(PAYMENT_KEY, JSON.stringify(payments));
+      }
+
+      function getCustomVehicles() {
+        const raw = localStorage.getItem(VEHICLE_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveCustomVehicles(customVehicles) {
+        localStorage.setItem(VEHICLE_KEY, JSON.stringify(customVehicles));
+      }
+
+      function getAssignments() {
+        const raw = localStorage.getItem(ASSIGNMENT_KEY);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveAssignments(assignments) {
+        localStorage.setItem(ASSIGNMENT_KEY, JSON.stringify(assignments));
+      }
+
+      function addCustomVehicle(value) {
+        const vehicleName = value.trim();
+
+        if (!vehicleName) {
+          return;
+        }
+
+        const baseVehiclesLower = new Set(vehicles.map((item) => item.toLowerCase()));
+        if (baseVehiclesLower.has(vehicleName.toLowerCase())) {
+          return;
+        }
+
+        const customVehicles = getCustomVehicles();
+        const alreadyExists = customVehicles.some((item) => item.toLowerCase() === vehicleName.toLowerCase());
+
+        if (alreadyExists) {
+          return;
+        }
+
+        customVehicles.push(vehicleName);
+        saveCustomVehicles(customVehicles);
+      }
+
+      function renderMissions() {
+        const missions = getMissions();
+        missionList.innerHTML = "";
+
+        missions.forEach((mission, index) => {
+          const item = document.createElement("li");
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+
+          const text = document.createElement("span");
+          text.className = "item-text";
+          text.textContent = mission;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "item-btn";
+          editButton.textContent = "Modifier";
+          editButton.addEventListener("click", () => {
+            const newMission = prompt("Modifier la mission :", mission);
+
+            if (newMission === null) {
+              return;
+            }
+
+            const trimmedMission = newMission.trim();
+            if (!trimmedMission) {
+              missionMessage.textContent = "La mission modifiée ne peut pas être vide.";
+              return;
+            }
+
+            const updatedMissions = getMissions();
+            updatedMissions[index] = trimmedMission;
+            saveMissions(updatedMissions);
+            renderMissions();
+            renderAssignmentData();
+            missionMessage.textContent = "Mission modifiée ✅";
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "item-btn delete";
+          deleteButton.textContent = "Supprimer";
+          deleteButton.addEventListener("click", () => {
+            const updatedMissions = getMissions();
+            updatedMissions.splice(index, 1);
+            saveMissions(updatedMissions);
+            renderMissions();
+            renderAssignmentData();
+            missionMessage.textContent = "Mission supprimée ✅";
+          });
+
+          actions.appendChild(editButton);
+          actions.appendChild(deleteButton);
+
+          wrapper.appendChild(text);
+          wrapper.appendChild(actions);
+          item.appendChild(wrapper);
+          missionList.appendChild(item);
+        });
+      }
+
+      function renderDrivers() {
+        const drivers = getDrivers();
+        driverList.innerHTML = "";
+
+        drivers.forEach((driver, index) => {
+          const item = document.createElement("li");
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+
+          const text = document.createElement("span");
+          text.className = "item-text";
+          text.textContent = driver;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "item-btn";
+          editButton.textContent = "Modifier";
+          editButton.addEventListener("click", () => {
+            const newDriver = prompt("Modifier le chauffeur :", driver);
+
+            if (newDriver === null) {
+              return;
+            }
+
+            const trimmedDriver = newDriver.trim();
+            if (!trimmedDriver) {
+              driverMessage.textContent = "Le chauffeur modifié ne peut pas être vide.";
+              return;
+            }
+
+            const updatedDrivers = getDrivers();
+            updatedDrivers[index] = trimmedDriver;
+            saveDrivers(updatedDrivers);
+            renderDrivers();
+            renderAssignmentData();
+            driverMessage.textContent = "Chauffeur modifié ✅";
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "item-btn delete";
+          deleteButton.textContent = "Supprimer";
+          deleteButton.addEventListener("click", () => {
+            const updatedDrivers = getDrivers();
+            updatedDrivers.splice(index, 1);
+            saveDrivers(updatedDrivers);
+            renderDrivers();
+            renderAssignmentData();
+            driverMessage.textContent = "Chauffeur supprimé ✅";
+          });
+
+          actions.appendChild(editButton);
+          actions.appendChild(deleteButton);
+
+          wrapper.appendChild(text);
+          wrapper.appendChild(actions);
+          item.appendChild(wrapper);
+          driverList.appendChild(item);
+        });
+      }
+
+      function renderMissionTypes() {
+        const missionTypes = getMissionTypes();
+        typeList.innerHTML = "";
+
+        missionTypes.forEach((type, index) => {
+          const item = document.createElement("li");
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+
+          const text = document.createElement("span");
+          text.className = "item-text";
+          text.textContent = type;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "item-btn";
+          editButton.textContent = "Modifier";
+          editButton.addEventListener("click", () => {
+            const newType = prompt("Modifier le type de mission :", type);
+
+            if (newType === null) {
+              return;
+            }
+
+            const trimmedType = newType.trim();
+            if (!trimmedType) {
+              typeMessage.textContent = "Le type de mission modifié ne peut pas être vide.";
+              return;
+            }
+
+            const updatedTypes = getMissionTypes();
+            updatedTypes[index] = trimmedType;
+            saveMissionTypes(updatedTypes);
+            renderMissionTypes();
+            renderAssignmentData();
+            typeMessage.textContent = "Type de mission modifié ✅";
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "item-btn delete";
+          deleteButton.textContent = "Supprimer";
+          deleteButton.addEventListener("click", () => {
+            const updatedTypes = getMissionTypes();
+            updatedTypes.splice(index, 1);
+            saveMissionTypes(updatedTypes);
+            renderMissionTypes();
+            renderAssignmentData();
+            typeMessage.textContent = "Type de mission supprimé ✅";
+          });
+
+          actions.appendChild(editButton);
+          actions.appendChild(deleteButton);
+
+          wrapper.appendChild(text);
+          wrapper.appendChild(actions);
+          item.appendChild(wrapper);
+          typeList.appendChild(item);
+        });
+      }
+
+      function renderPayments() {
+        const payments = getPayments();
+        paymentList.innerHTML = "";
+
+        payments.forEach((payment, index) => {
+          const item = document.createElement("li");
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+
+          const text = document.createElement("span");
+          text.className = "item-text";
+          text.textContent = payment;
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "item-btn";
+          editButton.textContent = "Modifier";
+          editButton.addEventListener("click", () => {
+            const newPayment = prompt("Modifier le paiement :", payment);
+
+            if (newPayment === null) {
+              return;
+            }
+
+            const trimmedPayment = newPayment.trim();
+            if (!trimmedPayment) {
+              paymentMessage.textContent = "Le paiement modifié ne peut pas être vide.";
+              return;
+            }
+
+            const updatedPayments = getPayments();
+            updatedPayments[index] = trimmedPayment;
+            savePayments(updatedPayments);
+            renderPayments();
+            renderAssignmentData();
+            paymentMessage.textContent = "Paiement modifié ✅";
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "item-btn delete";
+          deleteButton.textContent = "Supprimer";
+          deleteButton.addEventListener("click", () => {
+            const updatedPayments = getPayments();
+            updatedPayments.splice(index, 1);
+            savePayments(updatedPayments);
+            renderPayments();
+            renderAssignmentData();
+            paymentMessage.textContent = "Paiement supprimé ✅";
+          });
+
+          actions.appendChild(editButton);
+          actions.appendChild(deleteButton);
+
+          wrapper.appendChild(text);
+          wrapper.appendChild(actions);
+          item.appendChild(wrapper);
+          paymentList.appendChild(item);
+        });
+      }
+
+      function fillSelect(selectElement, items, placeholder) {
+        selectElement.innerHTML = "";
+
+        if (items.length === 0) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = placeholder;
+          selectElement.appendChild(option);
+          selectElement.disabled = true;
+          return;
+        }
+
+        selectElement.disabled = false;
+        items.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item;
+          option.textContent = item;
+          selectElement.appendChild(option);
+        });
+      }
+
+      function renderAssignmentData() {
+        const missionTypes = getMissionTypes();
+        const missions = getMissions();
+        const drivers = getDrivers();
+        const payments = getPayments();
+
+        fillSelect(missionTypeSelect, missionTypes, "Aucun type de mission enregistré");
+        fillSelect(missionSelect, missions, "Aucune mission enregistrée");
+        fillSelect(driverSelect, drivers, "Aucun chauffeur enregistré");
+        fillSelect(paymentSelect, payments, "Aucun paiement enregistré");
+
+        if (
+          missionTypes.length === 0 ||
+          missions.length === 0 ||
+          drivers.length === 0 ||
+          payments.length === 0
+        ) {
+          assignHint.textContent =
+            "Ajoute d'abord des types de missions, missions, chauffeurs et paiements dans la base de données.";
+          return;
+        }
+
+        assignHint.textContent =
+          "Choisis un type de mission, une mission, un chauffeur et un paiement dans les listes déroulantes.";
+      }
+
+      function formatDateOnly(dateValue) {
+        if (!dateValue) {
+          return "";
+        }
+
+        const parsedDate = new Date(dateValue);
+        if (Number.isNaN(parsedDate.getTime())) {
+          return "";
+        }
+
+        return parsedDate.toLocaleDateString("fr-FR");
+      }
+
+      function sortDateLabelsDesc(dateA, dateB) {
+        const [dayA, monthA, yearA] = dateA.split("/").map(Number);
+        const [dayB, monthB, yearB] = dateB.split("/").map(Number);
+        return new Date(yearB, monthB - 1, dayB) - new Date(yearA, monthA - 1, dayA);
+      }
+
+      function populateTrackingFilters(assignments) {
+        const selectedDriver = trackingDriverFilter.value;
+        const selectedDate = trackingDateFilter.value;
+
+        const drivers = Array.from(
+          new Set(
+            assignments
+              .map((assignment) => (assignment.driver || "").trim())
+              .filter(Boolean)
+          )
+        ).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+
+        const dates = Array.from(
+          new Set(assignments.map((assignment) => formatDateOnly(assignment.createdAt)).filter(Boolean))
+        ).sort(sortDateLabelsDesc);
+
+        trackingDriverFilter.innerHTML = "";
+        const allDriversOption = document.createElement("option");
+        allDriversOption.value = "";
+        allDriversOption.textContent = "Tous les chauffeurs";
+        trackingDriverFilter.appendChild(allDriversOption);
+
+        drivers.forEach((driver) => {
+          const option = document.createElement("option");
+          option.value = driver;
+          option.textContent = driver;
+          trackingDriverFilter.appendChild(option);
+        });
+
+        trackingDateFilter.innerHTML = "";
+        const allDatesOption = document.createElement("option");
+        allDatesOption.value = "";
+        allDatesOption.textContent = "Toutes les dates";
+        trackingDateFilter.appendChild(allDatesOption);
+
+        dates.forEach((dateLabel) => {
+          const option = document.createElement("option");
+          option.value = dateLabel;
+          option.textContent = dateLabel;
+          trackingDateFilter.appendChild(option);
+        });
+
+        if (drivers.includes(selectedDriver)) {
+          trackingDriverFilter.value = selectedDriver;
+        }
+
+        if (dates.includes(selectedDate)) {
+          trackingDateFilter.value = selectedDate;
+        }
+      }
+
+      function getFilteredTrackingAssignments(assignments) {
+        return assignments.filter((assignment) => {
+          const hasDriverMatch =
+            !trackingDriverFilter.value || assignment.driver === trackingDriverFilter.value;
+          const hasDateMatch =
+            !trackingDateFilter.value ||
+            formatDateOnly(assignment.createdAt) === trackingDateFilter.value;
+
+          return hasDriverMatch && hasDateMatch;
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function exportTrackingToExcel() {
+        const assignments = getAssignments();
+        const filteredAssignments = getFilteredTrackingAssignments(assignments);
+
+        if (filteredAssignments.length === 0) {
+          trackingEmpty.textContent = "Aucune donnée à exporter.";
+          return;
+        }
+
+        const headers = [
+          "Type de mission",
+          "Mission",
+          "Chauffeur",
+          "Ville",
+          "Quartier",
+          "Destination",
+          "Véhicule",
+          "Matricule",
+          "Prix",
+          "Paiement",
+          "Date",
+        ];
+
+        const rows = filteredAssignments.map((assignment) => [
+          assignment.missionType || "",
+          assignment.mission || "",
+          assignment.driver || "",
+          assignment.city || "",
+          assignment.district || "",
+          assignment.destinationCity || "",
+          assignment.vehicle || "",
+          assignment.matricule || "",
+          assignment.price || "",
+          assignment.payment || "",
+          formatDateOnly(assignment.createdAt),
+        ]);
+
+        const tableHtml = `
+          <table>
+            <thead>
+              <tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map(
+                  (row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`
+                )
+                .join("")}
+            </tbody>
+          </table>
+        `;
+
+        const excelHtml = `
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+              <meta charset="UTF-8" />
+            </head>
+            <body>${tableHtml}</body>
+          </html>
+        `;
+
+        const blob = new Blob([excelHtml], {
+          type: "application/vnd.ms-excel;charset=utf-8;",
+        });
+
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = `tracking-${new Date().toISOString().slice(0, 10)}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+      }
+
+      function deleteTrackingData() {
+        const shouldDelete = window.confirm(
+          "Voulez-vous vraiment supprimer toutes les données du tracking ?"
+        );
+
+        if (!shouldDelete) {
+          return;
+        }
+
+        localStorage.removeItem(ASSIGNMENT_KEY);
+        trackingDriverFilter.value = "";
+        trackingDateFilter.value = "";
+        renderTrackingData();
+        trackingEmpty.textContent = "Toutes les données de tracking ont été supprimées.";
+      }
+
+      function logout() {
+        window.location.href = "index.html";
+      }
+
+      function renderTrackingData() {
+        const assignments = getAssignments();
+        trackingTableBody.innerHTML = "";
+
+        populateTrackingFilters(assignments);
+        const filteredAssignments = getFilteredTrackingAssignments(assignments);
+
+        if (assignments.length === 0) {
+          trackingEmpty.textContent = "Aucune donnée enregistrée pour le moment.";
+          return;
+        }
+
+        if (filteredAssignments.length === 0) {
+          trackingEmpty.textContent = "Aucun résultat pour ce filtre.";
+          return;
+        }
+
+        trackingEmpty.textContent = "";
+
+        filteredAssignments.forEach((assignment) => {
+          const row = document.createElement("tr");
+
+          const dateValue = formatDateOnly(assignment.createdAt);
+
+          const columns = [
+            assignment.missionType,
+            assignment.mission,
+            assignment.driver,
+            assignment.city,
+            assignment.district,
+            assignment.destinationCity,
+            assignment.vehicle,
+            assignment.matricule,
+            assignment.price,
+            assignment.payment,
+            dateValue,
+          ];
+
+          columns.forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value || "";
+            row.appendChild(cell);
+          });
+
+          trackingTableBody.appendChild(row);
+        });
+      }
+
+      function showView(viewName) {
+        const showDatabase = viewName === "database";
+        const showAssign = viewName === "assign";
+        const showTracking = viewName === "tracking";
+
+        databaseView.classList.toggle("hidden", !showDatabase);
+        assignView.classList.toggle("hidden", !showAssign);
+        trackingView.classList.toggle("hidden", !showTracking);
+
+        btnDatabase.classList.toggle("active", showDatabase);
+        btnAssign.classList.toggle("active", showAssign);
+        btnTracking.classList.toggle("active", showTracking);
+
+        if (showAssign) {
+          renderAssignmentData();
+          return;
+        }
+
+        if (showTracking) {
+          renderTrackingData();
+        }
+      }
+
+      function renderCities() {
+        citySelect.innerHTML = "";
+
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Choisir une ville";
+        citySelect.appendChild(placeholderOption);
+
+        moroccoCities.forEach((city) => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          citySelect.appendChild(option);
+        });
+
+        cityNote.textContent = `${moroccoCities.length} villes disponibles dans la liste.`;
+      }
+
+      function renderDestinationCities() {
+        destinationCitySelect.innerHTML = "";
+
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Choisir une ville de destination";
+        destinationCitySelect.appendChild(placeholderOption);
+
+        moroccoCities.forEach((city) => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          destinationCitySelect.appendChild(option);
+        });
+      }
+
+      function renderVehicles(selectedValue = "") {
+        vehicleSelect.innerHTML = "";
+
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Choisir un véhicule";
+        vehicleSelect.appendChild(placeholderOption);
+
+        const allVehicles = [...vehicles, ...getCustomVehicles()];
+
+        allVehicles.forEach((vehicle) => {
+          const option = document.createElement("option");
+          option.value = vehicle;
+          option.textContent = vehicle;
+          vehicleSelect.appendChild(option);
+        });
+
+        const customOption = document.createElement("option");
+        customOption.value = "__custom__";
+        customOption.textContent = "Autre véhicule (écrire)";
+        vehicleSelect.appendChild(customOption);
+
+        if (selectedValue) {
+          vehicleSelect.value = selectedValue;
+        }
+      }
+
+      function toggleCustomVehicleInput() {
+        const isCustom = vehicleSelect.value === "__custom__";
+        customVehicleInput.hidden = !isCustom;
+
+        if (isCustom) {
+          customVehicleInput.focus();
+          return;
+        }
+
+        customVehicleInput.value = "";
+      }
+
+      function clearAssignmentValidation() {
+        [
+          missionTypeSelect,
+          missionSelect,
+          driverSelect,
+          paymentSelect,
+          citySelect,
+          districtInput,
+          destinationCitySelect,
+          vehicleSelect,
+          customVehicleInput,
+          vehiclePlateInput,
+          priceInput,
+        ].forEach((element) => element.classList.remove("invalid-field"));
+      }
+
+      function markInvalid(element) {
+        element.classList.add("invalid-field");
+      }
+
+      function saveAssignment() {
+        clearAssignmentValidation();
+        assignHint.className = "assign-hint";
+
+        const invalidFields = [];
+
+        if (!missionTypeSelect.value) invalidFields.push(missionTypeSelect);
+        if (!missionSelect.value) invalidFields.push(missionSelect);
+        if (!driverSelect.value) invalidFields.push(driverSelect);
+        if (!paymentSelect.value) invalidFields.push(paymentSelect);
+        if (!citySelect.value) invalidFields.push(citySelect);
+        if (!districtInput.value.trim()) invalidFields.push(districtInput);
+        if (!destinationCitySelect.value) invalidFields.push(destinationCitySelect);
+        if (!vehicleSelect.value) invalidFields.push(vehicleSelect);
+
+        const isCustomVehicle = vehicleSelect.value === "__custom__";
+        const customVehicleValue = customVehicleInput.value.trim();
+        if (isCustomVehicle && !customVehicleValue) invalidFields.push(customVehicleInput);
+
+        const matriculeValue = vehiclePlateInput.value.trim();
+        if (!matriculeValue) invalidFields.push(vehiclePlateInput);
+
+        const priceValue = priceInput.value.trim();
+        if (!priceValue) invalidFields.push(priceInput);
+
+        if (invalidFields.length > 0) {
+          invalidFields.forEach(markInvalid);
+          invalidFields[0].focus();
+          assignHint.textContent = "Tous les champs sont obligatoires.";
+          assignHint.classList.add("error");
+          return;
+        }
+
+        let selectedVehicle = vehicleSelect.value;
+
+        if (isCustomVehicle) {
+          addCustomVehicle(customVehicleValue);
+          selectedVehicle = customVehicleValue;
+          renderVehicles(selectedVehicle);
+          customVehicleInput.hidden = true;
+          customVehicleInput.value = "";
+        }
+
+        const assignments = getAssignments();
+        assignments.push({
+          missionType: missionTypeSelect.value,
+          mission: missionSelect.value,
+          driver: driverSelect.value,
+          city: citySelect.value,
+          district: districtInput.value.trim(),
+          destinationCity: destinationCitySelect.value,
+          vehicle: selectedVehicle,
+          matricule: matriculeValue,
+          price: priceValue,
+          payment: paymentSelect.value,
+          createdAt: new Date().toISOString(),
+        });
+        saveAssignments(assignments);
+        renderTrackingData();
+
+        assignHint.textContent = "Affectation enregistrée avec succès ✅";
+        assignHint.classList.add("success");
+
+        missionTypeSelect.value = "";
+        missionSelect.value = "";
+        driverSelect.value = "";
+        paymentSelect.value = "";
+        citySelect.value = "";
+        districtInput.value = "";
+        destinationCitySelect.value = "";
+        renderVehicles();
+        vehicleSelect.value = "";
+        toggleCustomVehicleInput();
+        vehiclePlateInput.value = "";
+        priceInput.value = "";
+        clearAssignmentValidation();
+      }
+
+      function saveCustomVehicleFromInput() {
+        if (vehicleSelect.value !== "__custom__") {
+          return;
+        }
+
+        const vehicleName = customVehicleInput.value.trim();
+        if (!vehicleName) {
+          return;
+        }
+
+        addCustomVehicle(vehicleName);
+        renderVehicles(vehicleName);
+        customVehicleInput.hidden = true;
+        customVehicleInput.value = "";
+      }
+
+      missionForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const mission = missionInput.value.trim();
+
+        if (!mission) {
+          missionMessage.textContent = "Merci de saisir une mission.";
+          return;
+        }
+
+        const missions = getMissions();
+        missions.push(mission);
+        saveMissions(missions);
+        renderMissions();
+        renderAssignmentData();
+
+        missionMessage.textContent = "Mission ajoutée et enregistrée automatiquement ✅";
+        missionForm.reset();
+        missionInput.focus();
+      });
+
+      driverForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const driver = driverInput.value.trim();
+
+        if (!driver) {
+          driverMessage.textContent = "Merci de saisir un chauffeur.";
+          return;
+        }
+
+        const drivers = getDrivers();
+        drivers.push(driver);
+        saveDrivers(drivers);
+        renderDrivers();
+        renderAssignmentData();
+
+        driverMessage.textContent = "Chauffeur ajouté et enregistré automatiquement ✅";
+        driverForm.reset();
+        driverInput.focus();
+      });
+
+      typeForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const missionType = typeInput.value.trim();
+
+        if (!missionType) {
+          typeMessage.textContent = "Merci de saisir un type de mission.";
+          return;
+        }
+
+        const missionTypes = getMissionTypes();
+        missionTypes.push(missionType);
+        saveMissionTypes(missionTypes);
+        renderMissionTypes();
+        renderAssignmentData();
+
+        typeMessage.textContent = "Type de mission ajouté et enregistré automatiquement ✅";
+        typeForm.reset();
+        typeInput.focus();
+      });
+
+      paymentForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const payment = paymentInput.value.trim();
+
+        if (!payment) {
+          paymentMessage.textContent = "Merci de saisir un paiement.";
+          return;
+        }
+
+        const payments = getPayments();
+        payments.push(payment);
+        savePayments(payments);
+        renderPayments();
+        renderAssignmentData();
+
+        paymentMessage.textContent = "Paiement ajouté et enregistré automatiquement ✅";
+        paymentForm.reset();
+        paymentInput.focus();
+      });
+
+      renderMissions();
+      renderDrivers();
+      renderMissionTypes();
+      renderPayments();
+      renderCities();
+      renderDestinationCities();
+      renderVehicles();
+      toggleCustomVehicleInput();
+      renderAssignmentData();
+
+      btnDatabase.addEventListener("click", () => showView("database"));
+      btnAssign.addEventListener("click", () => showView("assign"));
+      btnTracking.addEventListener("click", () => showView("tracking"));
+      btnDeleteData.addEventListener("click", deleteTrackingData);
+      btnLogout.addEventListener("click", logout);
+      trackingDriverFilter.addEventListener("change", renderTrackingData);
+      trackingDateFilter.addEventListener("change", renderTrackingData);
+      exportTrackingBtn.addEventListener("click", exportTrackingToExcel);
+      vehicleSelect.addEventListener("change", toggleCustomVehicleInput);
+      customVehicleInput.addEventListener("blur", saveCustomVehicleFromInput);
+      customVehicleInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          saveCustomVehicleFromInput();
+        }
+      });
+      saveAssignmentBtn.addEventListener("click", saveAssignment);
+    </script>
+  </body>
+</html>

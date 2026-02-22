@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Affectation Mission / Chauffeur</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #f8fafc;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #002857;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 620px;
+        background: #ffffff;
+        border: 1px solid #dbe1ea;
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      label {
+        font-weight: 600;
+      }
+
+      select {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        background: #ffffff;
+      }
+
+      .hint {
+        margin: 0;
+        font-size: 0.92rem;
+        color: #334155;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: #002857;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="card">
+        <h1>Affectation</h1>
+
+        <div class="field">
+          <label for="missionSelect">Choisir la mission</label>
+          <select id="missionSelect"></select>
+        </div>
+
+        <div class="field">
+          <label for="driverSelect">Choisir le chauffeur</label>
+          <select id="driverSelect"></select>
+        </div>
+
+        <p id="hint" class="hint"></p>
+        <a class="back-link" href="tracking.html">Retour</a>
+      </section>
+    </main>
+
+    <script>
+      const MISSION_KEY = "skyCarMissions";
+      const DRIVER_KEY = "skyCarDrivers";
+
+      const missionSelect = document.getElementById("missionSelect");
+      const driverSelect = document.getElementById("driverSelect");
+      const hint = document.getElementById("hint");
+
+      function getArrayFromStorage(key) {
+        const raw = localStorage.getItem(key);
+
+        if (!raw) {
+          return [];
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function fillSelect(selectElement, items, placeholder) {
+        selectElement.innerHTML = "";
+
+        if (items.length === 0) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = placeholder;
+          selectElement.appendChild(option);
+          selectElement.disabled = true;
+          return;
+        }
+
+        selectElement.disabled = false;
+        items.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item;
+          option.textContent = item;
+          selectElement.appendChild(option);
+        });
+      }
+
+      const missions = getArrayFromStorage(MISSION_KEY);
+      const drivers = getArrayFromStorage(DRIVER_KEY);
+
+      fillSelect(missionSelect, missions, "Aucune mission enregistrée");
+      fillSelect(driverSelect, drivers, "Aucun chauffeur enregistré");
+
+      if (missions.length === 0 || drivers.length === 0) {
+        hint.textContent = "Ajoute d'abord des missions et des chauffeurs dans la base de données.";
+      } else {
+        hint.textContent = "Sélectionne une mission et un chauffeur dans les listes déroulantes.";
+      }
+    </script>
+  </body>
+</html>

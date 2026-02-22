@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Car Assistance | Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="card" aria-labelledby="login-title">
+        <h1 id="login-title">Connexion</h1>
+        <p class="subtitle" id="subtitle">Accède à ton espace Sky Car Assistance</p>
+
+        <div class="switch" role="tablist" aria-label="Choisir une action">
+          <button id="tabLogin" class="switch-btn active" type="button" role="tab" aria-selected="true">
+            Connexion
+          </button>
+          <button id="tabSignup" class="switch-btn" type="button" role="tab" aria-selected="false">
+            Créer un compte
+          </button>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="exemple@skycar.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="field">
+            <label for="password">Mot de passe</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              required
+              minlength="6"
+              autocomplete="current-password"
+            />
+          </div>
+
+          <button type="submit">Se connecter</button>
+          <button id="forgotPasswordLink" class="text-btn" type="button">Mot de passe oublié ?</button>
+          <p id="loginMessage" role="status" aria-live="polite"></p>
+        </form>
+
+        <form id="forgotForm" class="hidden" novalidate>
+          <div class="field">
+            <label for="forgotPhone">Numéro de téléphone du compte</label>
+            <input
+              type="tel"
+              id="forgotPhone"
+              name="forgotPhone"
+              placeholder="+33612345678"
+              required
+              autocomplete="tel"
+            />
+          </div>
+
+          <button id="sendResetCode" type="button">Envoyer le code</button>
+
+          <div class="field">
+            <label for="resetCode">Code reçu</label>
+            <input
+              type="text"
+              id="resetCode"
+              name="resetCode"
+              placeholder="123456"
+              required
+              inputmode="numeric"
+              maxlength="6"
+            />
+          </div>
+
+          <div class="field">
+            <label for="newPassword">Nouveau mot de passe</label>
+            <input
+              type="password"
+              id="newPassword"
+              name="newPassword"
+              placeholder="••••••••"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <div class="field">
+            <label for="confirmNewPassword">Confirmer le nouveau mot de passe</label>
+            <input
+              type="password"
+              id="confirmNewPassword"
+              name="confirmNewPassword"
+              placeholder="••••••••"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <button type="submit">Réinitialiser le mot de passe</button>
+          <button id="backToLogin" class="text-btn" type="button">Retour à la connexion</button>
+          <p id="forgotMessage" role="status" aria-live="polite"></p>
+        </form>
+
+        <form id="signupForm" class="hidden" novalidate>
+          <div class="field">
+            <label for="fullName">Nom complet</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              placeholder="Ton nom"
+              required
+              autocomplete="name"
+            />
+          </div>
+
+          <div class="field">
+            <label for="signupEmail">Email</label>
+            <input
+              type="email"
+              id="signupEmail"
+              name="signupEmail"
+              placeholder="exemple@skycar.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="field">
+            <label for="signupPhone">Numéro de téléphone</label>
+            <input
+              type="tel"
+              id="signupPhone"
+              name="signupPhone"
+              placeholder="+33612345678"
+              required
+              autocomplete="tel"
+            />
+          </div>
+
+          <div class="field">
+            <label for="signupPassword">Mot de passe</label>
+            <input
+              type="password"
+              id="signupPassword"
+              name="signupPassword"
+              placeholder="••••••••"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="••••••••"
+              required
+              minlength="6"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <button type="submit">Créer mon compte</button>
+          <p id="signupMessage" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
