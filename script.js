@@ -20,6 +20,8 @@ const carBrowLeft = document.getElementById("carBrowLeft");
 const carBrowRight = document.getElementById("carBrowRight");
 const carMouth = document.getElementById("carMouth");
 const loginPasswordField = document.getElementById("password");
+const carWheels = document.querySelectorAll(".wheel");
+const carBody = document.querySelector(".car-body");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
@@ -65,6 +67,26 @@ if (carAnim && window.gsap) {
     .set(carAnim, { scaleX: -1 })
     .to(carAnim, { x: 0, duration: 2.4 })
     .set(carAnim, { scaleX: 1 });
+
+  if (carWheels.length > 0) {
+    window.gsap.to(carWheels, {
+      rotate: "+=360",
+      duration: 0.35,
+      ease: "none",
+      repeat: -1,
+      transformOrigin: "center center",
+    });
+  }
+
+  if (carBody) {
+    window.gsap.to(carBody, {
+      y: -2,
+      duration: 0.35,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut",
+    });
+  }
 }
 
 function setCarNeutral() {
