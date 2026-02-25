@@ -24,6 +24,75 @@ body {
   padding: 24px;
 }
 
+.brand-header {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.brand-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: #f97316;
+}
+
+.logo-mark {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  flex-shrink: 0;
+}
+
+.logo-mark .bi {
+  position: absolute;
+  inset: 0;
+  font-size: 5.3rem;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.logo-ring {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 8px solid #f97316;
+  background: transparent;
+}
+
+.logo-text {
+  display: grid;
+  gap: 4px;
+}
+
+.logo-main {
+  margin: 0;
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  line-height: 1;
+}
+
+.logo-sub {
+  margin: 0;
+  color: #f97316;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  font-size: clamp(0.75rem, 2.1vw, 1.35rem);
+}
+
 .hero-road {
   position: relative;
   width: 100%;
@@ -154,6 +223,28 @@ body {
 @media (max-width: 640px) {
   .page {
     padding: 16px;
+  }
+
+  .brand-header {
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+
+  .logo-mark {
+    width: 68px;
+    height: 68px;
+  }
+
+  .logo-mark .bi {
+    font-size: 3.9rem;
+  }
+
+  .logo-ring {
+    left: 8px;
+    top: 8px;
+    width: 52px;
+    height: 52px;
+    border-width: 6px;
   }
 
   .hero-road {
