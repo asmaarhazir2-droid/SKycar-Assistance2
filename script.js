@@ -22,10 +22,15 @@ const RESET_CODE_TTL_MS = 10 * 60 * 1000;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
 const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
 
+async function refreshCloudBeforeAuth() {
+  await cloudReadyPromise;
+  await (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve());
+}
+
 if (storageStatus) {
   storageStatus.textContent = window.skyCloud?.isConfigured?.()
-    ? "Les données sont stockées dans le cloud et récupérées sur vos autres téléphones."
-    : "Mode local actif: configure cloud-sync.js pour récupérer les données sur d'autres téléphones.";
+    ? "Les données sont synchronisées avec Firebase et disponibles sur vos autres téléphones/PC."
+    : "Synchronisation Firebase indisponible (vérifie firebase-config.js).";
 }
 
 function normalizePhone(phone) {
@@ -126,7 +131,7 @@ forgotPasswordLink.addEventListener("click", () => {
 backToLogin.addEventListener("click", () => setActiveView("login"));
 
 sendResetCode.addEventListener("click", async () => {
-  await cloudReadyPromise;
+  await refreshCloudBeforeAuth();
   const forgotPhoneInput = document.getElementById("forgotPhone");
   const phone = normalizePhone(forgotPhoneInput.value.trim());
 
@@ -163,7 +168,7 @@ sendResetCode.addEventListener("click", async () => {
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await cloudReadyPromise;
+  await refreshCloudBeforeAuth();
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -218,7 +223,7 @@ loginForm.addEventListener("submit", async (event) => {
 
 signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await cloudReadyPromise;
+  await refreshCloudBeforeAuth();
 
   const fullNameInput = document.getElementById("fullName");
   const emailInput = document.getElementById("signupEmail");
@@ -295,6 +300,7 @@ signupForm.addEventListener("submit", async (event) => {
     password,
   });
   saveAccounts(accounts);
+  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
   localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
 
   const shouldAutoLogin = Boolean(autoLoginAfterSignup?.checked);
@@ -325,7 +331,7 @@ signupForm.addEventListener("submit", async (event) => {
 
 forgotForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await cloudReadyPromise;
+  await refreshCloudBeforeAuth();
 
   const forgotPhoneInput = document.getElementById("forgotPhone");
   const resetCodeInput = document.getElementById("resetCode");
@@ -402,9 +408,11 @@ forgotForm.addEventListener("submit", async (event) => {
 
   accounts[accountIndex].password = newPassword;
   saveAccounts(accounts);
+  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
 
   delete resetCodes[phone];
   saveResetCodes(resetCodes);
+  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
 
   forgotMessage.textContent = "Mot de passe réinitialisé avec succès ✅";
   forgotMessage.classList.add("success");

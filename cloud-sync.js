@@ -1,8 +1,6 @@
 (function () {
-  const CLOUD_CONFIG = {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
+  const FIREBASE_CONFIG = {
+    ...(window.SKY_FIREBASE_CONFIG || {}),
   };
 
   const STORAGE_KEYS = {
@@ -16,14 +14,18 @@
     assignments: "skyCarAssignments",
   };
 
-  const CLOUD_DOC_ID = "global";
   const CLOUD_COLLECTION = "skycar-data";
+  const CLOUD_DOC_ID = "global";
 
   let db = null;
+  let auth = null;
   let initialized = false;
+  let authReadyPromise = Promise.resolve();
 
   function hasCloudConfig() {
-    return Boolean(CLOUD_CONFIG.apiKey && CLOUD_CONFIG.authDomain && CLOUD_CONFIG.projectId);
+    return Boolean(
+      FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId
+    );
   }
 
   function initCloud() {
@@ -43,9 +45,24 @@
 
     const app = window.firebase.apps.length
       ? window.firebase.app()
-      : window.firebase.initializeApp(CLOUD_CONFIG);
+      : window.firebase.initializeApp(FIREBASE_CONFIG);
 
+    auth = app.auth();
     db = app.firestore();
+
+    authReadyPromise = ensureSignedIn();
+  }
+
+  async function ensureSignedIn() {
+    if (!auth) {
+      return;
+    }
+
+    if (auth.currentUser) {
+      return;
+    }
+
+    await auth.signInAnonymously();
   }
 
   function parseArray(raw) {
@@ -133,6 +150,8 @@
       return null;
     }
 
+    await authReadyPromise;
+
     const snapshot = await db.collection(CLOUD_COLLECTION).doc(CLOUD_DOC_ID).get();
 
     if (!snapshot.exists) {
@@ -142,6 +161,72 @@
     return snapshot.data() || null;
   }
 
+  function mergeUniqueArrays(cloudArray, localArray) {
+    const safeCloud = Array.isArray(cloudArray) ? cloudArray : [];
+    const safeLocal = Array.isArray(localArray) ? localArray : [];
+    const seen = new Set();
+    const merged = [];
+
+    [...safeCloud, ...safeLocal].forEach((item) => {
+      const key = JSON.stringify(item);
+
+      if (seen.has(key)) {
+        return;
+      }
+
+      seen.add(key);
+      merged.push(item);
+    });
+
+    return merged;
+  }
+
+  function mergeAccounts(cloudAccounts, localAccounts) {
+    const safeCloud = Array.isArray(cloudAccounts) ? cloudAccounts : [];
+    const safeLocal = Array.isArray(localAccounts) ? localAccounts : [];
+    const byEmail = new Map();
+
+    [...safeCloud, ...safeLocal].forEach((account) => {
+      if (!account || typeof account !== "object") {
+        return;
+      }
+
+      const email = String(account.email || "").toLowerCase().trim();
+
+      if (!email) {
+        return;
+      }
+
+      byEmail.set(email, {
+        ...byEmail.get(email),
+        ...account,
+        email,
+      });
+    });
+
+    return Array.from(byEmail.values());
+  }
+
+  function mergeSnapshots(cloudSnapshot, localSnapshot) {
+    const cloud = cloudSnapshot && typeof cloudSnapshot === "object" ? cloudSnapshot : {};
+    const local = localSnapshot && typeof localSnapshot === "object" ? localSnapshot : {};
+
+    return {
+      accounts: mergeAccounts(cloud.accounts, local.accounts),
+      resetCodes: {
+        ...(cloud.resetCodes && typeof cloud.resetCodes === "object" ? cloud.resetCodes : {}),
+        ...(local.resetCodes && typeof local.resetCodes === "object" ? local.resetCodes : {}),
+      },
+      missions: mergeUniqueArrays(cloud.missions, local.missions),
+      drivers: mergeUniqueArrays(cloud.drivers, local.drivers),
+      missionTypes: mergeUniqueArrays(cloud.missionTypes, local.missionTypes),
+      payments: mergeUniqueArrays(cloud.payments, local.payments),
+      vehicles: mergeUniqueArrays(cloud.vehicles, local.vehicles),
+      assignments: mergeUniqueArrays(cloud.assignments, local.assignments),
+      updatedAt: Date.now(),
+    };
+  }
+
   async function pushCloudData(data) {
     initCloud();
 
@@ -149,9 +234,14 @@
       return false;
     }
 
+    await authReadyPromise;
+
+    const cloudData = (await pullCloudData()) || {};
+    const merged = mergeSnapshots(cloudData, data);
+
     await db.collection(CLOUD_COLLECTION).doc(CLOUD_DOC_ID).set(
       {
-        ...data,
+        ...merged,
         updatedAt: Date.now(),
       },
       { merge: true }
@@ -168,7 +258,8 @@
         return { synced: false, mode: "local" };
       }
 
-      saveSnapshotToLocal(cloudData);
+      const merged = mergeSnapshots(cloudData, getLocalSnapshot());
+      saveSnapshotToLocal(merged);
       return { synced: true, mode: "cloud" };
     } catch {
       return { synced: false, mode: "local" };
@@ -196,6 +287,7 @@
   window.skyCloud = {
     isConfigured: hasCloudConfig,
     hydrateFromCloud,
+    refreshFromCloud: hydrateFromCloud,
     pushNow: async () => {
       const payload = getLocalSnapshot();
       return pushCloudData(payload);
