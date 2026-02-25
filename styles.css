@@ -10,15 +10,42 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  background: #002857;
   color: #0f172a;
 }
 
 .page {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
   padding: 24px;
+}
+
+.hero-road {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  height: 54px;
+  overflow: hidden;
+}
+
+.road-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  border-bottom: 3px dashed rgba(255, 255, 255, 0.55);
+}
+
+.car-emoji {
+  position: absolute;
+  left: 0;
+  bottom: 15px;
+  font-size: 1.8rem;
+  transform: translateX(0);
 }
 
 .card {
@@ -33,6 +60,14 @@ body {
 @media (max-width: 640px) {
   .page {
     padding: 16px;
+  }
+
+  .hero-road {
+    height: 46px;
+  }
+
+  .car-emoji {
+    font-size: 1.5rem;
   }
 
   .card {

@@ -13,6 +13,7 @@ const autoLoginAfterSignup = document.getElementById("autoLoginAfterSignup");
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const backToLogin = document.getElementById("backToLogin");
 const sendResetCode = document.getElementById("sendResetCode");
+const carAnim = document.getElementById("carAnim");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
@@ -44,6 +45,20 @@ if (storageStatus) {
   storageStatus.textContent = auth && db
     ? "Compte synchronisé avec Firebase Auth + Firestore."
     : "Firebase indisponible (vérifie firebase-config.js).";
+}
+
+if (carAnim && window.gsap) {
+  window.gsap.set(carAnim, { x: 0, scaleX: 1 });
+
+  const roadWidth = () => Math.max(160, window.innerWidth < 540 ? 180 : 380);
+
+  const timeline = window.gsap.timeline({ repeat: -1, defaults: { ease: "power1.inOut" } });
+
+  timeline
+    .to(carAnim, { x: roadWidth(), duration: 2.4 })
+    .set(carAnim, { scaleX: -1 })
+    .to(carAnim, { x: 0, duration: 2.4 })
+    .set(carAnim, { scaleX: 1 });
 }
 
 async function getUserProfileByUid(uid) {

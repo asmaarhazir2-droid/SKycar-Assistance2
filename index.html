@@ -8,6 +8,11 @@
   </head>
   <body>
     <main class="page">
+      <section class="hero-road" aria-hidden="true">
+        <div class="road-line"></div>
+        <div id="carAnim" class="car-emoji">🚗</div>
+      </section>
+
       <section class="card" aria-labelledby="login-title">
         <h1 id="login-title">Connexion</h1>
         <p class="subtitle" id="subtitle">Accède à ton espace Sky Car Assistance</p>
@@ -137,6 +142,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="firebase-config.js"></script>
     <script src="cloud-sync.js"></script>
     <script src="script.js"></script>
