@@ -268,30 +268,41 @@
 
   let syncTimer = null;
 
+  async function pushNowSafe() {
+    const payload = getLocalSnapshot();
+
+    try {
+      await pushCloudData(payload);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function schedulePush(delayMs) {
     if (syncTimer) {
       clearTimeout(syncTimer);
     }
 
     syncTimer = setTimeout(async () => {
-      const payload = getLocalSnapshot();
-
-      try {
-        await pushCloudData(payload);
-      } catch {
-        // no-op
-      }
+      await pushNowSafe();
     }, delayMs);
   }
+
+  window.addEventListener("pagehide", () => {
+    void pushNowSafe();
+  });
+
+  window.addEventListener("beforeunload", () => {
+    void pushNowSafe();
+  });
 
   window.skyCloud = {
     isConfigured: hasCloudConfig,
     hydrateFromCloud,
     refreshFromCloud: hydrateFromCloud,
-    pushNow: async () => {
-      const payload = getLocalSnapshot();
-      return pushCloudData(payload);
-    },
+    pushNow: pushNowSafe,
+    syncNow: pushNowSafe,
     schedulePush,
   };
 })();

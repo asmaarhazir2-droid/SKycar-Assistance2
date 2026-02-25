@@ -205,6 +205,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     loginMessage.textContent = `Connexion réussie ✅ Bienvenue ${displayName}.`;
     loginMessage.classList.add("success");
+    await (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve());
     loginForm.reset();
 
     setTimeout(() => {
@@ -290,7 +291,13 @@ signupForm.addEventListener("submit", async (event) => {
   }
 
   const normalizedEmail = email.toLowerCase();
-  const phoneProfile = await getUserProfileByPhone(phone);
+  let phoneProfile = null;
+
+  try {
+    phoneProfile = await getUserProfileByPhone(phone);
+  } catch {
+    phoneProfile = null;
+  }
 
   if (phoneProfile) {
     signupMessage.textContent = "Un compte existe déjà avec ce numéro de téléphone.";
@@ -320,6 +327,7 @@ signupForm.addEventListener("submit", async (event) => {
     if (shouldAutoLogin) {
       signupMessage.textContent = `Compte créé et connexion réussie ✅ Bienvenue ${fullName}.`;
       signupMessage.classList.add("success");
+      await (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve());
       signupForm.reset();
 
       setTimeout(() => {
