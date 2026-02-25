@@ -24,30 +24,6 @@ body {
   padding: 24px;
 }
 
-.brand-header {
-  width: 100%;
-  max-width: 860px;
-  display: grid;
-  place-items: center;
-  position: relative;
-  padding-bottom: 10px;
-}
-
-.brand-header::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: #f97316;
-}
-
-.brand-logo {
-  width: min(100%, 820px);
-  height: auto;
-  display: block;
-}
 
 .hero-road {
   position: relative;
@@ -179,10 +155,6 @@ body {
 @media (max-width: 640px) {
   .page {
     padding: 16px;
-  }
-
-  .brand-header {
-    padding-bottom: 8px;
   }
 
   .hero-road {
