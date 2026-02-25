@@ -15,7 +15,6 @@ const backToLogin = document.getElementById("backToLogin");
 const sendResetCode = document.getElementById("sendResetCode");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phonePattern = /^\+?[0-9]{8,15}$/;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
 const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
 
@@ -47,10 +46,6 @@ if (storageStatus) {
     : "Firebase indisponible (vérifie firebase-config.js).";
 }
 
-function normalizePhone(phone) {
-  return phone.replace(/[\s()-]/g, "");
-}
-
 async function getUserProfileByUid(uid) {
   if (!db || !uid) {
     return null;
@@ -58,24 +53,6 @@ async function getUserProfileByUid(uid) {
 
   const documentSnapshot = await db.collection("users").doc(uid).get();
   return documentSnapshot.exists ? documentSnapshot.data() : null;
-}
-
-async function getUserProfileByPhone(phone) {
-  if (!db || !phone) {
-    return null;
-  }
-
-  const result = await db.collection("users").where("phone", "==", phone).limit(1).get();
-
-  if (result.empty) {
-    return null;
-  }
-
-  const profileDoc = result.docs[0];
-  return {
-    uid: profileDoc.id,
-    ...profileDoc.data(),
-  };
 }
 
 function clearMessages() {
@@ -136,30 +113,21 @@ sendResetCode.addEventListener("click", async () => {
     return;
   }
 
-  const forgotPhoneInput = document.getElementById("forgotPhone");
-  const phone = normalizePhone(forgotPhoneInput.value.trim());
+  const forgotEmailInput = document.getElementById("forgotEmail");
+  const email = forgotEmailInput.value.trim().toLowerCase();
 
   forgotMessage.className = "";
 
-  if (!phonePattern.test(phone)) {
-    forgotMessage.textContent = "Merci d'entrer un numéro de téléphone valide.";
+  if (!emailPattern.test(email)) {
+    forgotMessage.textContent = "Merci d'entrer un email valide.";
     forgotMessage.classList.add("error");
-    forgotPhoneInput.focus();
+    forgotEmailInput.focus();
     return;
   }
 
-  const profile = await getUserProfileByPhone(phone);
+  await auth.sendPasswordResetEmail(email);
 
-  if (!profile || !profile.email) {
-    forgotMessage.textContent = "Aucun compte trouvé avec ce numéro de téléphone.";
-    forgotMessage.classList.add("error");
-    forgotPhoneInput.focus();
-    return;
-  }
-
-  await auth.sendPasswordResetEmail(profile.email);
-
-  forgotMessage.textContent = `Lien de réinitialisation envoyé ✅ (${profile.email})`;
+  forgotMessage.textContent = `Lien de réinitialisation envoyé ✅ (${email})`;
   forgotMessage.classList.add("success");
 });
 
@@ -243,13 +211,11 @@ signupForm.addEventListener("submit", async (event) => {
 
   const fullNameInput = document.getElementById("fullName");
   const emailInput = document.getElementById("signupEmail");
-  const phoneInput = document.getElementById("signupPhone");
   const passwordInput = document.getElementById("signupPassword");
   const confirmPasswordInput = document.getElementById("confirmPassword");
 
   const fullName = fullNameInput.value.trim();
   const email = emailInput.value.trim();
-  const phone = normalizePhone(phoneInput.value.trim());
   const password = passwordInput.value;
   const confirmPassword = confirmPasswordInput.value;
 
@@ -269,13 +235,6 @@ signupForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!phonePattern.test(phone)) {
-    signupMessage.textContent = "Merci d'entrer un numéro de téléphone valide.";
-    signupMessage.classList.add("error");
-    phoneInput.focus();
-    return;
-  }
-
   if (password.length < 6) {
     signupMessage.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
     signupMessage.classList.add("error");
@@ -291,21 +250,6 @@ signupForm.addEventListener("submit", async (event) => {
   }
 
   const normalizedEmail = email.toLowerCase();
-  let phoneProfile = null;
-
-  try {
-    phoneProfile = await getUserProfileByPhone(phone);
-  } catch {
-    phoneProfile = null;
-  }
-
-  if (phoneProfile) {
-    signupMessage.textContent = "Un compte existe déjà avec ce numéro de téléphone.";
-    signupMessage.classList.add("error");
-    phoneInput.focus();
-    return;
-  }
-
   try {
     const credential = await auth.createUserWithEmailAndPassword(normalizedEmail, password);
 
@@ -313,7 +257,6 @@ signupForm.addEventListener("submit", async (event) => {
       {
         fullName,
         email: normalizedEmail,
-        phone,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
         createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },

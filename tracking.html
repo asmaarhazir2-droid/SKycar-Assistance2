@@ -1882,11 +1882,21 @@
         btnTracking.classList.toggle("active", showTracking);
 
         if (showAssign) {
+          void (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve()).then(() => {
+            renderMissions();
+            renderDrivers();
+            renderMissionTypes();
+            renderPayments();
+            renderAssignmentData();
+          });
           renderAssignmentData();
           return;
         }
 
         if (showTracking) {
+          void (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve()).then(() => {
+            renderTrackingData();
+          });
           renderTrackingData();
         }
       }
@@ -2177,6 +2187,15 @@
         renderMissionTypes();
         renderPayments();
         renderVehicles();
+        renderAssignmentData();
+        renderTrackingData();
+      });
+
+      window.skyCloud?.onRemoteUpdate?.(() => {
+        renderMissions();
+        renderDrivers();
+        renderMissionTypes();
+        renderPayments();
         renderAssignmentData();
         renderTrackingData();
       });

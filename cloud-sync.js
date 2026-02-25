@@ -21,6 +21,8 @@
   let auth = null;
   let initialized = false;
   let authReadyPromise = Promise.resolve();
+  let cloudUnsubscribe = null;
+  const remoteListeners = new Set();
 
   function hasCloudConfig() {
     return Boolean(
@@ -50,7 +52,9 @@
     auth = app.auth();
     db = app.firestore();
 
-    authReadyPromise = ensureSignedIn();
+    authReadyPromise = ensureSignedIn().then(() => {
+      subscribeToRemoteChanges();
+    });
   }
 
   async function ensureSignedIn() {
@@ -58,11 +62,54 @@
       return;
     }
 
+    await new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged(() => {
+        unsubscribe();
+        resolve();
+      });
+    });
+
     if (auth.currentUser) {
       return;
     }
 
-    await auth.signInAnonymously();
+    try {
+      await auth.signInAnonymously();
+    } catch {
+      // no-op: user can still be authenticated later with email/password
+    }
+  }
+
+  function subscribeToRemoteChanges() {
+    if (!db || cloudUnsubscribe) {
+      return;
+    }
+
+    cloudUnsubscribe = db
+      .collection(CLOUD_COLLECTION)
+      .doc(CLOUD_DOC_ID)
+      .onSnapshot(
+        (snapshot) => {
+          if (!snapshot.exists) {
+            return;
+          }
+
+          const remoteData = snapshot.data() || {};
+          const merged = mergeSnapshots(remoteData, getLocalSnapshot());
+          saveSnapshotToLocal(merged);
+
+          remoteListeners.forEach((listener) => {
+            try {
+              listener(merged);
+            } catch {
+              // no-op
+            }
+          });
+        },
+        () => {
+          // no-op
+        }
+      );
   }
 
   function parseArray(raw) {
@@ -303,6 +350,16 @@
     refreshFromCloud: hydrateFromCloud,
     pushNow: pushNowSafe,
     syncNow: pushNowSafe,
+    onRemoteUpdate: (listener) => {
+      if (typeof listener !== "function") {
+        return () => {};
+      }
+
+      remoteListeners.add(listener);
+      return () => {
+        remoteListeners.delete(listener);
+      };
+    },
     schedulePush,
   };
 })();

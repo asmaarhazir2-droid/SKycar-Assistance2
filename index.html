@@ -55,59 +55,18 @@
 
         <form id="forgotForm" class="hidden" novalidate>
           <div class="field">
-            <label for="forgotPhone">Numéro de téléphone du compte</label>
+            <label for="forgotEmail">Email du compte</label>
             <input
-              type="tel"
-              id="forgotPhone"
-              name="forgotPhone"
-              placeholder="+33612345678"
+              type="email"
+              id="forgotEmail"
+              name="forgotEmail"
+              placeholder="exemple@skycar.com"
               required
-              autocomplete="tel"
+              autocomplete="email"
             />
           </div>
 
-          <button id="sendResetCode" type="button">Envoyer le code</button>
-
-          <div class="field">
-            <label for="resetCode">Code reçu</label>
-            <input
-              type="text"
-              id="resetCode"
-              name="resetCode"
-              placeholder="123456"
-              required
-              inputmode="numeric"
-              maxlength="6"
-            />
-          </div>
-
-          <div class="field">
-            <label for="newPassword">Nouveau mot de passe</label>
-            <input
-              type="password"
-              id="newPassword"
-              name="newPassword"
-              placeholder="••••••••"
-              required
-              minlength="6"
-              autocomplete="new-password"
-            />
-          </div>
-
-          <div class="field">
-            <label for="confirmNewPassword">Confirmer le nouveau mot de passe</label>
-            <input
-              type="password"
-              id="confirmNewPassword"
-              name="confirmNewPassword"
-              placeholder="••••••••"
-              required
-              minlength="6"
-              autocomplete="new-password"
-            />
-          </div>
-
-          <button type="submit">Réinitialiser le mot de passe</button>
+          <button id="sendResetCode" type="button">Envoyer le lien</button>
           <button id="backToLogin" class="text-btn" type="button">Retour à la connexion</button>
           <p id="forgotMessage" role="status" aria-live="polite"></p>
         </form>
@@ -134,18 +93,6 @@
               placeholder="exemple@skycar.com"
               required
               autocomplete="email"
-            />
-          </div>
-
-          <div class="field">
-            <label for="signupPhone">Numéro de téléphone</label>
-            <input
-              type="tel"
-              id="signupPhone"
-              name="signupPhone"
-              placeholder="+33612345678"
-              required
-              autocomplete="tel"
             />
           </div>
 
