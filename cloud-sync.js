@@ -95,7 +95,7 @@
           }
 
           const remoteData = snapshot.data() || {};
-          const merged = mergeSnapshots(remoteData, getLocalSnapshot());
+          const merged = hydrateMerge(remoteData, getLocalSnapshot());
           saveSnapshotToLocal(merged);
 
           remoteListeners.forEach((listener) => {
@@ -208,68 +208,46 @@
     return snapshot.data() || null;
   }
 
-  function mergeUniqueArrays(cloudArray, localArray) {
-    const safeCloud = Array.isArray(cloudArray) ? cloudArray : [];
-    const safeLocal = Array.isArray(localArray) ? localArray : [];
-    const seen = new Set();
-    const merged = [];
-
-    [...safeCloud, ...safeLocal].forEach((item) => {
-      const key = JSON.stringify(item);
-
-      if (seen.has(key)) {
-        return;
-      }
-
-      seen.add(key);
-      merged.push(item);
-    });
-
-    return merged;
-  }
-
-  function mergeAccounts(cloudAccounts, localAccounts) {
-    const safeCloud = Array.isArray(cloudAccounts) ? cloudAccounts : [];
-    const safeLocal = Array.isArray(localAccounts) ? localAccounts : [];
-    const byEmail = new Map();
-
-    [...safeCloud, ...safeLocal].forEach((account) => {
-      if (!account || typeof account !== "object") {
-        return;
-      }
-
-      const email = String(account.email || "").toLowerCase().trim();
-
-      if (!email) {
-        return;
-      }
-
-      byEmail.set(email, {
-        ...byEmail.get(email),
-        ...account,
-        email,
-      });
-    });
-
-    return Array.from(byEmail.values());
-  }
-
-  function mergeSnapshots(cloudSnapshot, localSnapshot) {
-    const cloud = cloudSnapshot && typeof cloudSnapshot === "object" ? cloudSnapshot : {};
-    const local = localSnapshot && typeof localSnapshot === "object" ? localSnapshot : {};
+  function normalizeSnapshot(snapshot) {
+    const safe = snapshot && typeof snapshot === "object" ? snapshot : {};
 
     return {
-      accounts: mergeAccounts(cloud.accounts, local.accounts),
-      resetCodes: {
-        ...(cloud.resetCodes && typeof cloud.resetCodes === "object" ? cloud.resetCodes : {}),
-        ...(local.resetCodes && typeof local.resetCodes === "object" ? local.resetCodes : {}),
-      },
-      missions: mergeUniqueArrays(cloud.missions, local.missions),
-      drivers: mergeUniqueArrays(cloud.drivers, local.drivers),
-      missionTypes: mergeUniqueArrays(cloud.missionTypes, local.missionTypes),
-      payments: mergeUniqueArrays(cloud.payments, local.payments),
-      vehicles: mergeUniqueArrays(cloud.vehicles, local.vehicles),
-      assignments: mergeUniqueArrays(cloud.assignments, local.assignments),
+      accounts: Array.isArray(safe.accounts) ? safe.accounts : [],
+      resetCodes: safe.resetCodes && typeof safe.resetCodes === "object" ? safe.resetCodes : {},
+      missions: Array.isArray(safe.missions) ? safe.missions : [],
+      drivers: Array.isArray(safe.drivers) ? safe.drivers : [],
+      missionTypes: Array.isArray(safe.missionTypes) ? safe.missionTypes : [],
+      payments: Array.isArray(safe.payments) ? safe.payments : [],
+      vehicles: Array.isArray(safe.vehicles) ? safe.vehicles : [],
+      assignments: Array.isArray(safe.assignments) ? safe.assignments : [],
+      updatedAt: Number(safe.updatedAt || 0),
+    };
+  }
+
+  function hydrateMerge(cloudSnapshot, localSnapshot) {
+    const cloud = normalizeSnapshot(cloudSnapshot);
+    const local = normalizeSnapshot(localSnapshot);
+
+    if (!cloud.updatedAt) {
+      return {
+        ...local,
+        updatedAt: local.updatedAt || Date.now(),
+      };
+    }
+
+    return {
+      ...cloud,
+      updatedAt: cloud.updatedAt || Date.now(),
+    };
+  }
+
+  function pushMerge(cloudSnapshot, localSnapshot) {
+    const cloud = normalizeSnapshot(cloudSnapshot);
+    const local = normalizeSnapshot(localSnapshot);
+
+    return {
+      ...cloud,
+      ...local,
       updatedAt: Date.now(),
     };
   }
@@ -284,7 +262,7 @@
     await authReadyPromise;
 
     const cloudData = (await pullCloudData()) || {};
-    const merged = mergeSnapshots(cloudData, data);
+    const merged = pushMerge(cloudData, data);
 
     await db.collection(CLOUD_COLLECTION).doc(CLOUD_DOC_ID).set(
       {
@@ -305,7 +283,7 @@
         return { synced: false, mode: "local" };
       }
 
-      const merged = mergeSnapshots(cloudData, getLocalSnapshot());
+      const merged = hydrateMerge(cloudData, getLocalSnapshot());
       saveSnapshotToLocal(merged);
       return { synced: true, mode: "cloud" };
     } catch {
