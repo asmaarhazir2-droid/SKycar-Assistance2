@@ -476,7 +476,7 @@
           <button id="btnDatabase" class="db-button active" type="button">Base de données</button>
           <button id="btnAssign" class="db-button" type="button">Ajout mission</button>
           <button id="btnTracking" class="db-button" type="button">Historique des missions</button>
-          <button id="btnDeleteData" class="db-button danger" type="button">Supprimer data</button>
+          <button id="btnDeleteData" class="db-button danger" type="button">Supprimer historique</button>
           <button id="btnLogout" class="db-button" type="button">Déconnexion</button>
         </aside>
 
@@ -1783,20 +1783,20 @@
 
       function deleteTrackingData() {
         const shouldDelete = window.confirm(
-          "Voulez-vous vraiment supprimer toutes les données du tracking ?"
+          "Supprimer uniquement l'historique des missions ? (la base de données sera conservée)"
         );
 
         if (!shouldDelete) {
           return;
         }
 
-        localStorage.removeItem(ASSIGNMENT_KEY);
+        localStorage.setItem(ASSIGNMENT_KEY, JSON.stringify([]));
         window.skyCloud?.schedulePush?.(300);
         void (window.skyCloud?.syncNow?.() ?? Promise.resolve());
         trackingDriverFilter.value = "";
         trackingDateFilter.value = "";
         renderTrackingData();
-        trackingEmpty.textContent = "Toutes les données de tracking ont été supprimées.";
+        trackingEmpty.textContent = "Historique des missions supprimé ✅ (base de données conservée).";
       }
 
       function logout() {
