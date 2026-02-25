@@ -14,6 +14,12 @@ const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const backToLogin = document.getElementById("backToLogin");
 const sendResetCode = document.getElementById("sendResetCode");
 const carAnim = document.getElementById("carAnim");
+const carEyeLeft = document.getElementById("carEyeLeft");
+const carEyeRight = document.getElementById("carEyeRight");
+const carBrowLeft = document.getElementById("carBrowLeft");
+const carBrowRight = document.getElementById("carBrowRight");
+const carMouth = document.getElementById("carMouth");
+const loginPasswordField = document.getElementById("password");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
@@ -50,7 +56,7 @@ if (storageStatus) {
 if (carAnim && window.gsap) {
   window.gsap.set(carAnim, { x: 0, scaleX: 1 });
 
-  const roadWidth = () => Math.max(160, window.innerWidth < 540 ? 180 : 380);
+  const roadWidth = () => Math.max(180, window.innerWidth < 540 ? 210 : 470);
 
   const timeline = window.gsap.timeline({ repeat: -1, defaults: { ease: "power1.inOut" } });
 
@@ -60,6 +66,99 @@ if (carAnim && window.gsap) {
     .to(carAnim, { x: 0, duration: 2.4 })
     .set(carAnim, { scaleX: 1 });
 }
+
+function setCarNeutral() {
+  if (!window.gsap || !carEyeLeft || !carEyeRight || !carMouth || !carBrowLeft || !carBrowRight) {
+    return;
+  }
+
+  window.gsap.to([carEyeLeft, carEyeRight], { scaleY: 1, duration: 0.18, transformOrigin: "center" });
+  window.gsap.to([carBrowLeft, carBrowRight], { opacity: 0, rotation: 0, y: 0, duration: 0.2 });
+  window.gsap.to(carMouth, {
+    width: 30,
+    height: 6,
+    borderBottomWidth: 3,
+    borderTopWidth: 0,
+    borderRadius: "0 0 12px 12px",
+    y: 0,
+    duration: 0.2,
+  });
+}
+
+function setCarTyping() {
+  if (!window.gsap || !carEyeLeft || !carEyeRight || !carBrowLeft || !carBrowRight || !carMouth) {
+    return;
+  }
+
+  window.gsap.to([carEyeLeft, carEyeRight], { scaleY: 0.08, duration: 0.12, transformOrigin: "center" });
+  window.gsap.to([carBrowLeft, carBrowRight], { opacity: 0, duration: 0.12 });
+  window.gsap.to(carMouth, {
+    width: 22,
+    height: 4,
+    borderBottomWidth: 3,
+    borderTopWidth: 0,
+    borderRadius: "0 0 10px 10px",
+    duration: 0.12,
+  });
+}
+
+function setCarHappy() {
+  if (!window.gsap || !carEyeLeft || !carEyeRight || !carMouth || !carBrowLeft || !carBrowRight) {
+    return;
+  }
+
+  window.gsap.to([carEyeLeft, carEyeRight], { scaleY: 1, duration: 0.16, transformOrigin: "center" });
+  window.gsap.to([carBrowLeft, carBrowRight], { opacity: 0, duration: 0.16 });
+  window.gsap.to(carMouth, {
+    width: 34,
+    height: 12,
+    borderBottomWidth: 3,
+    borderTopWidth: 0,
+    borderRadius: "0 0 18px 18px",
+    y: 1,
+    duration: 0.2,
+  });
+}
+
+function setCarAngry() {
+  if (!window.gsap || !carEyeLeft || !carEyeRight || !carMouth || !carBrowLeft || !carBrowRight) {
+    return;
+  }
+
+  window.gsap.to([carEyeLeft, carEyeRight], { scaleY: 1, duration: 0.16, transformOrigin: "center" });
+  window.gsap.to(carBrowLeft, { opacity: 1, rotation: -25, y: -1, duration: 0.16, transformOrigin: "left center" });
+  window.gsap.to(carBrowRight, { opacity: 1, rotation: 25, y: -1, duration: 0.16, transformOrigin: "right center" });
+  window.gsap.to(carMouth, {
+    width: 30,
+    height: 8,
+    borderBottomWidth: 0,
+    borderTopWidth: 3,
+    borderRadius: "12px 12px 0 0",
+    y: 2,
+    duration: 0.2,
+  });
+}
+
+if (loginPasswordField) {
+  let typingTimer = null;
+
+  loginPasswordField.addEventListener("input", () => {
+    setCarTyping();
+    if (typingTimer) {
+      clearTimeout(typingTimer);
+    }
+
+    typingTimer = setTimeout(() => {
+      setCarNeutral();
+    }, 240);
+  });
+
+  loginPasswordField.addEventListener("blur", () => {
+    setCarNeutral();
+  });
+}
+
+setCarNeutral();
 
 async function getUserProfileByUid(uid) {
   if (!db || !uid) {
@@ -174,6 +273,7 @@ loginForm.addEventListener("submit", async (event) => {
   if (password.length < 6) {
     loginMessage.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
     loginMessage.classList.add("error");
+    setCarAngry();
     passwordInput.focus();
     return;
   }
@@ -188,6 +288,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     loginMessage.textContent = `Connexion réussie ✅ Bienvenue ${displayName}.`;
     loginMessage.classList.add("success");
+    setCarHappy();
     await (window.skyCloud?.refreshFromCloud?.() ?? Promise.resolve());
     loginForm.reset();
 
@@ -198,6 +299,7 @@ loginForm.addEventListener("submit", async (event) => {
     if (error?.code === "auth/invalid-credential" || error?.code === "auth/wrong-password") {
       loginMessage.textContent = "Email ou mot de passe incorrect.";
       loginMessage.classList.add("error");
+      setCarAngry();
       passwordInput.focus();
       return;
     }
@@ -205,12 +307,14 @@ loginForm.addEventListener("submit", async (event) => {
     if (error?.code === "auth/user-not-found") {
       loginMessage.textContent = "Aucun compte trouvé avec cet email.";
       loginMessage.classList.add("error");
+      setCarAngry();
       emailInput.focus();
       return;
     }
 
     loginMessage.textContent = "Erreur de connexion Firebase.";
     loginMessage.classList.add("error");
+    setCarAngry();
   }
 });
 
