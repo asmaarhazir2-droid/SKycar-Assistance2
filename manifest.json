@@ -1,0 +1,13 @@
+{
+  "name": "Sky Car Assistance",
+  "short_name": "SkyCar",
+  "description": "Application de gestion des missions Sky Car Assistance",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#002857",
+  "theme_color": "#002857",
+  "icons": []
+}
