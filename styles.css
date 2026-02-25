@@ -286,6 +286,11 @@ button:hover {
   background: #1d4ed8;
 }
 
+button .bi,
+.text-btn .bi {
+  margin-right: 6px;
+}
+
 .text-btn {
   margin-top: 10px;
   padding: 0;

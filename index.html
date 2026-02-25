@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sky Car Assistance | Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -33,10 +34,10 @@
 
         <div class="switch" role="tablist" aria-label="Choisir une action">
           <button id="tabLogin" class="switch-btn active" type="button" role="tab" aria-selected="true">
-            Connexion
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Connexion
           </button>
           <button id="tabSignup" class="switch-btn" type="button" role="tab" aria-selected="false">
-            Créer un compte
+            <i class="bi bi-person-plus" aria-hidden="true"></i> Créer un compte
           </button>
         </div>
 
@@ -66,8 +67,8 @@
             />
           </div>
 
-          <button type="submit">Se connecter</button>
-          <button id="forgotPasswordLink" class="text-btn" type="button">Mot de passe oublié ?</button>
+          <button type="submit"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Se connecter</button>
+          <button id="forgotPasswordLink" class="text-btn" type="button"><i class="bi bi-key" aria-hidden="true"></i> Mot de passe oublié ?</button>
           <p id="loginMessage" role="status" aria-live="polite"></p>
         </form>
 
@@ -84,8 +85,8 @@
             />
           </div>
 
-          <button id="sendResetCode" type="button">Envoyer le lien</button>
-          <button id="backToLogin" class="text-btn" type="button">Retour à la connexion</button>
+          <button id="sendResetCode" type="button"><i class="bi bi-envelope-arrow-up" aria-hidden="true"></i> Envoyer le lien</button>
+          <button id="backToLogin" class="text-btn" type="button"><i class="bi bi-arrow-left" aria-hidden="true"></i> Retour à la connexion</button>
           <p id="forgotMessage" role="status" aria-live="polite"></p>
         </form>
 
@@ -145,7 +146,7 @@
             <span>Se connecter automatiquement après création</span>
           </label>
 
-          <button type="submit">Créer mon compte</button>
+          <button type="submit"><i class="bi bi-person-plus" aria-hidden="true"></i> Créer mon compte</button>
           <p id="signupMessage" role="status" aria-live="polite"></p>
         </form>
 

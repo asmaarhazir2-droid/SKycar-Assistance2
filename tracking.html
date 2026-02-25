@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sky Car Assistance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <style>
       * {
         box-sizing: border-box;
@@ -382,6 +383,11 @@
         font-weight: 700;
       }
 
+      button .bi,
+      .db-button .bi {
+        margin-right: 6px;
+      }
+
       h1 {
         margin: 0;
         color: #ffffff;
@@ -473,11 +479,11 @@
 
       <section class="layout">
         <aside class="left-strip">
-          <button id="btnDatabase" class="db-button active" type="button">Base de données</button>
-          <button id="btnAssign" class="db-button" type="button">Ajout mission</button>
-          <button id="btnTracking" class="db-button" type="button">Historique des missions</button>
-          <button id="btnDeleteData" class="db-button danger" type="button">Supprimer historique</button>
-          <button id="btnLogout" class="db-button" type="button">Déconnexion</button>
+          <button id="btnDatabase" class="db-button active" type="button"><i class="bi bi-database" aria-hidden="true"></i>Base de données</button>
+          <button id="btnAssign" class="db-button" type="button"><i class="bi bi-plus-circle" aria-hidden="true"></i>Ajout mission</button>
+          <button id="btnTracking" class="db-button" type="button"><i class="bi bi-clock-history" aria-hidden="true"></i>Historique des missions</button>
+          <button id="btnDeleteData" class="db-button danger" type="button"><i class="bi bi-trash3" aria-hidden="true"></i>Supprimer historique</button>
+          <button id="btnLogout" class="db-button" type="button"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Déconnexion</button>
         </aside>
 
         <section class="white-content">
@@ -493,7 +499,7 @@
                     placeholder="Ex: Remorquage véhicule - Paris"
                     required
                   />
-                  <button type="submit">Ajouter</button>
+                  <button type="submit"><i class="bi bi-plus-circle" aria-hidden="true"></i>Ajouter</button>
                 </form>
 
                 <p id="missionMessage" class="mission-message" aria-live="polite"></p>
@@ -510,7 +516,7 @@
                     placeholder="Ex: Dépannage batterie"
                     required
                   />
-                  <button type="submit">Ajouter</button>
+                  <button type="submit"><i class="bi bi-plus-circle" aria-hidden="true"></i>Ajouter</button>
                 </form>
 
                 <p id="typeMessage" class="type-message" aria-live="polite"></p>
@@ -529,7 +535,7 @@
                     placeholder="Ex: Jean Dupont"
                     required
                   />
-                  <button type="submit">Ajouter</button>
+                  <button type="submit"><i class="bi bi-plus-circle" aria-hidden="true"></i>Ajouter</button>
                 </form>
 
                 <p id="driverMessage" class="driver-message" aria-live="polite"></p>
@@ -546,7 +552,7 @@
                     placeholder="Ex: Virement bancaire"
                     required
                   />
-                  <button type="submit">Ajouter</button>
+                  <button type="submit"><i class="bi bi-plus-circle" aria-hidden="true"></i>Ajouter</button>
                 </form>
 
                 <p id="paymentMessage" class="payment-message" aria-live="polite"></p>
@@ -627,7 +633,7 @@
                 </div>
               </div>
 
-              <button id="saveAssignmentBtn" class="save-btn" type="button">Enregistrer</button>
+              <button id="saveAssignmentBtn" class="save-btn" type="button"><i class="bi bi-floppy" aria-hidden="true"></i>Enregistrer</button>
 
               <p id="cityNote" class="city-note"></p>
               <p id="assignHint" class="assign-hint"></p>
@@ -656,10 +662,10 @@
 
               <div class="tracking-actions">
                 <button id="refreshDataBtn" class="export-btn" type="button">
-                  Rafraîchir la base
+                  <i class="bi bi-arrow-repeat" aria-hidden="true"></i>Rafraîchir la base
                 </button>
                 <button id="exportTrackingBtn" class="export-btn" type="button">
-                  Exporter data (Excel)
+                  <i class="bi bi-file-earmark-excel" aria-hidden="true"></i>Exporter data (Excel)
                 </button>
               </div>
 
@@ -1330,7 +1336,7 @@
           const editButton = document.createElement("button");
           editButton.type = "button";
           editButton.className = "item-btn";
-          editButton.textContent = "Modifier";
+          editButton.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i>Modifier';
           editButton.addEventListener("click", () => {
             const newMission = prompt("Modifier la mission :", mission);
 
@@ -1355,7 +1361,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "item-btn delete";
-          deleteButton.textContent = "Supprimer";
+          deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i>Supprimer';
           deleteButton.addEventListener("click", () => {
             const updatedMissions = getMissions();
             updatedMissions.splice(index, 1);
@@ -1395,7 +1401,7 @@
           const editButton = document.createElement("button");
           editButton.type = "button";
           editButton.className = "item-btn";
-          editButton.textContent = "Modifier";
+          editButton.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i>Modifier';
           editButton.addEventListener("click", () => {
             const newDriver = prompt("Modifier le chauffeur :", driver);
 
@@ -1420,7 +1426,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "item-btn delete";
-          deleteButton.textContent = "Supprimer";
+          deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i>Supprimer';
           deleteButton.addEventListener("click", () => {
             const updatedDrivers = getDrivers();
             updatedDrivers.splice(index, 1);
@@ -1460,7 +1466,7 @@
           const editButton = document.createElement("button");
           editButton.type = "button";
           editButton.className = "item-btn";
-          editButton.textContent = "Modifier";
+          editButton.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i>Modifier';
           editButton.addEventListener("click", () => {
             const newType = prompt("Modifier le type de mission :", type);
 
@@ -1485,7 +1491,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "item-btn delete";
-          deleteButton.textContent = "Supprimer";
+          deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i>Supprimer';
           deleteButton.addEventListener("click", () => {
             const updatedTypes = getMissionTypes();
             updatedTypes.splice(index, 1);
@@ -1525,7 +1531,7 @@
           const editButton = document.createElement("button");
           editButton.type = "button";
           editButton.className = "item-btn";
-          editButton.textContent = "Modifier";
+          editButton.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i>Modifier';
           editButton.addEventListener("click", () => {
             const newPayment = prompt("Modifier le paiement :", payment);
 
@@ -1550,7 +1556,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "item-btn delete";
-          deleteButton.textContent = "Supprimer";
+          deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i>Supprimer';
           deleteButton.addEventListener("click", () => {
             const updatedPayments = getPayments();
             updatedPayments.splice(index, 1);
