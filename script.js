@@ -16,11 +16,25 @@ const sendResetCode = document.getElementById("sendResetCode");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^\+?[0-9]{8,15}$/;
-const STORAGE_KEY = "skyCarAccounts";
-const RESET_CODES_KEY = "skyCarResetCodes";
-const RESET_CODE_TTL_MS = 10 * 60 * 1000;
 const LAST_EMAIL_KEY = "skyCarLastLoginEmail";
 const cloudReadyPromise = window.skyCloud?.hydrateFromCloud?.() ?? Promise.resolve();
+
+const firebaseApp = (() => {
+  try {
+    if (!window.firebase || !window.SKY_FIREBASE_CONFIG) {
+      return null;
+    }
+
+    return window.firebase.apps.length
+      ? window.firebase.app()
+      : window.firebase.initializeApp(window.SKY_FIREBASE_CONFIG);
+  } catch {
+    return null;
+  }
+})();
+
+const auth = firebaseApp ? firebaseApp.auth() : null;
+const db = firebaseApp ? firebaseApp.firestore() : null;
 
 async function refreshCloudBeforeAuth() {
   await cloudReadyPromise;
@@ -28,53 +42,40 @@ async function refreshCloudBeforeAuth() {
 }
 
 if (storageStatus) {
-  storageStatus.textContent = window.skyCloud?.isConfigured?.()
-    ? "Les données sont synchronisées avec Firebase et disponibles sur vos autres téléphones/PC."
-    : "Synchronisation Firebase indisponible (vérifie firebase-config.js).";
+  storageStatus.textContent = auth && db
+    ? "Compte synchronisé avec Firebase Auth + Firestore."
+    : "Firebase indisponible (vérifie firebase-config.js).";
 }
 
 function normalizePhone(phone) {
   return phone.replace(/[\s()-]/g, "");
 }
 
-function getAccounts() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-
-  if (!raw) {
-    return [];
+async function getUserProfileByUid(uid) {
+  if (!db || !uid) {
+    return null;
   }
 
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  const documentSnapshot = await db.collection("users").doc(uid).get();
+  return documentSnapshot.exists ? documentSnapshot.data() : null;
 }
 
-function saveAccounts(accounts) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-  window.skyCloud?.schedulePush?.(300);
-}
-
-function getResetCodes() {
-  const raw = localStorage.getItem(RESET_CODES_KEY);
-
-  if (!raw) {
-    return {};
+async function getUserProfileByPhone(phone) {
+  if (!db || !phone) {
+    return null;
   }
 
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
+  const result = await db.collection("users").where("phone", "==", phone).limit(1).get();
 
-function saveResetCodes(resetCodes) {
-  localStorage.setItem(RESET_CODES_KEY, JSON.stringify(resetCodes));
-  window.skyCloud?.schedulePush?.(300);
+  if (result.empty) {
+    return null;
+  }
+
+  const profileDoc = result.docs[0];
+  return {
+    uid: profileDoc.id,
+    ...profileDoc.data(),
+  };
 }
 
 function clearMessages() {
@@ -91,10 +92,6 @@ function setForgotMode(enabled) {
   forgotForm.classList.toggle("hidden", !enabled);
   tabLogin.disabled = enabled;
   tabSignup.disabled = enabled;
-}
-
-function generateResetCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
 function setActiveView(view) {
@@ -123,7 +120,7 @@ tabLogin.addEventListener("click", () => setActiveView("login"));
 tabSignup.addEventListener("click", () => setActiveView("signup"));
 forgotPasswordLink.addEventListener("click", () => {
   title.textContent = "Mot de passe oublié";
-  subtitle.textContent = "Reçois un code par SMS et choisis un nouveau mot de passe";
+  subtitle.textContent = "Reçois un lien de réinitialisation par email";
   clearMessages();
   setForgotMode(true);
 });
@@ -132,6 +129,13 @@ backToLogin.addEventListener("click", () => setActiveView("login"));
 
 sendResetCode.addEventListener("click", async () => {
   await refreshCloudBeforeAuth();
+
+  if (!auth || !db) {
+    forgotMessage.textContent = "Firebase n'est pas prêt.";
+    forgotMessage.classList.add("error");
+    return;
+  }
+
   const forgotPhoneInput = document.getElementById("forgotPhone");
   const phone = normalizePhone(forgotPhoneInput.value.trim());
 
@@ -144,31 +148,30 @@ sendResetCode.addEventListener("click", async () => {
     return;
   }
 
-  const accounts = getAccounts();
-  const accountExists = accounts.some((item) => item.phone === phone);
+  const profile = await getUserProfileByPhone(phone);
 
-  if (!accountExists) {
+  if (!profile || !profile.email) {
     forgotMessage.textContent = "Aucun compte trouvé avec ce numéro de téléphone.";
     forgotMessage.classList.add("error");
     forgotPhoneInput.focus();
     return;
   }
 
-  const code = generateResetCode();
-  const resetCodes = getResetCodes();
-  resetCodes[phone] = {
-    code,
-    expiresAt: Date.now() + RESET_CODE_TTL_MS,
-  };
-  saveResetCodes(resetCodes);
+  await auth.sendPasswordResetEmail(profile.email);
 
-  forgotMessage.textContent = `Code envoyé au téléphone ✅ (mode démo: ${code})`;
+  forgotMessage.textContent = `Lien de réinitialisation envoyé ✅ (${profile.email})`;
   forgotMessage.classList.add("success");
 });
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await refreshCloudBeforeAuth();
+
+  if (!auth) {
+    loginMessage.textContent = "Firebase Auth n'est pas disponible.";
+    loginMessage.classList.add("error");
+    return;
+  }
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -193,37 +196,49 @@ loginForm.addEventListener("submit", async (event) => {
   }
 
   const normalizedEmail = email.toLowerCase();
-  const accounts = getAccounts();
-  const account = accounts.find((item) => item.email === normalizedEmail);
+  try {
+    const credential = await auth.signInWithEmailAndPassword(normalizedEmail, password);
+    const profile = await getUserProfileByUid(credential.user.uid);
+    const displayName = profile?.fullName || credential.user.email;
 
-  if (!account) {
-    loginMessage.textContent = "Aucun compte trouvé avec cet email.";
+    localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
+
+    loginMessage.textContent = `Connexion réussie ✅ Bienvenue ${displayName}.`;
+    loginMessage.classList.add("success");
+    loginForm.reset();
+
+    setTimeout(() => {
+      window.location.href = "tracking.html";
+    }, 500);
+  } catch (error) {
+    if (error?.code === "auth/invalid-credential" || error?.code === "auth/wrong-password") {
+      loginMessage.textContent = "Email ou mot de passe incorrect.";
+      loginMessage.classList.add("error");
+      passwordInput.focus();
+      return;
+    }
+
+    if (error?.code === "auth/user-not-found") {
+      loginMessage.textContent = "Aucun compte trouvé avec cet email.";
+      loginMessage.classList.add("error");
+      emailInput.focus();
+      return;
+    }
+
+    loginMessage.textContent = "Erreur de connexion Firebase.";
     loginMessage.classList.add("error");
-    emailInput.focus();
-    return;
   }
-
-  if (account.password !== password) {
-    loginMessage.textContent = "Mot de passe incorrect.";
-    loginMessage.classList.add("error");
-    passwordInput.focus();
-    return;
-  }
-
-  localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
-
-  loginMessage.textContent = `Connexion réussie ✅ Bienvenue ${account.fullName}.`;
-  loginMessage.classList.add("success");
-  loginForm.reset();
-
-  setTimeout(() => {
-    window.location.href = "tracking.html";
-  }, 500);
 });
 
 signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await refreshCloudBeforeAuth();
+
+  if (!auth || !db) {
+    signupMessage.textContent = "Firebase Auth/Firestore n'est pas disponible.";
+    signupMessage.classList.add("error");
+    return;
+  }
 
   const fullNameInput = document.getElementById("fullName");
   const emailInput = document.getElementById("signupEmail");
@@ -275,152 +290,75 @@ signupForm.addEventListener("submit", async (event) => {
   }
 
   const normalizedEmail = email.toLowerCase();
-  const accounts = getAccounts();
-  const emailAlreadyUsed = accounts.some((item) => item.email === normalizedEmail);
-  const phoneAlreadyUsed = accounts.some((item) => item.phone === phone);
+  const phoneProfile = await getUserProfileByPhone(phone);
 
-  if (emailAlreadyUsed) {
-    signupMessage.textContent = "Un compte existe déjà avec cet email.";
-    signupMessage.classList.add("error");
-    emailInput.focus();
-    return;
-  }
-
-  if (phoneAlreadyUsed) {
+  if (phoneProfile) {
     signupMessage.textContent = "Un compte existe déjà avec ce numéro de téléphone.";
     signupMessage.classList.add("error");
     phoneInput.focus();
     return;
   }
 
-  accounts.push({
-    fullName,
-    email: normalizedEmail,
-    phone,
-    password,
-  });
-  saveAccounts(accounts);
-  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
-  localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
+  try {
+    const credential = await auth.createUserWithEmailAndPassword(normalizedEmail, password);
 
-  const shouldAutoLogin = Boolean(autoLoginAfterSignup?.checked);
+    await db.collection("users").doc(credential.user.uid).set(
+      {
+        fullName,
+        email: normalizedEmail,
+        phone,
+        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
 
-  if (shouldAutoLogin) {
-    signupMessage.textContent = `Compte créé et connexion réussie ✅ Bienvenue ${fullName}.`;
+    localStorage.setItem(LAST_EMAIL_KEY, normalizedEmail);
+
+    const shouldAutoLogin = Boolean(autoLoginAfterSignup?.checked);
+
+    if (shouldAutoLogin) {
+      signupMessage.textContent = `Compte créé et connexion réussie ✅ Bienvenue ${fullName}.`;
+      signupMessage.classList.add("success");
+      signupForm.reset();
+
+      setTimeout(() => {
+        window.location.href = "tracking.html";
+      }, 500);
+      return;
+    }
+
+    await auth.signOut();
+
+    signupMessage.textContent = "Compte créé avec succès ✅";
     signupMessage.classList.add("success");
     signupForm.reset();
+    setActiveView("login");
 
-    setTimeout(() => {
-      window.location.href = "tracking.html";
-    }, 500);
-    return;
+    const loginEmailInput = document.getElementById("email");
+    const loginPasswordInput = document.getElementById("password");
+    loginEmailInput.value = normalizedEmail;
+    loginMessage.textContent = "Compte enregistré ✅ Connecte-toi avec ton mot de passe.";
+    loginMessage.classList.add("success");
+    loginPasswordInput.focus();
+  } catch (error) {
+    if (error?.code === "auth/email-already-in-use") {
+      signupMessage.textContent = "Un compte existe déjà avec cet email.";
+      signupMessage.classList.add("error");
+      emailInput.focus();
+      return;
+    }
+
+    signupMessage.textContent = "Erreur lors de la création du compte Firebase.";
+    signupMessage.classList.add("error");
   }
-
-  signupMessage.textContent = "Compte créé avec succès ✅";
-  signupMessage.classList.add("success");
-  signupForm.reset();
-  setActiveView("login");
-
-  const loginEmailInput = document.getElementById("email");
-  const loginPasswordInput = document.getElementById("password");
-  loginEmailInput.value = normalizedEmail;
-  loginMessage.textContent = "Compte enregistré ✅ Connecte-toi avec ton mot de passe.";
-  loginMessage.classList.add("success");
-  loginPasswordInput.focus();
 });
 
 forgotForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await refreshCloudBeforeAuth();
-
-  const forgotPhoneInput = document.getElementById("forgotPhone");
-  const resetCodeInput = document.getElementById("resetCode");
-  const newPasswordInput = document.getElementById("newPassword");
-  const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
-
-  const phone = normalizePhone(forgotPhoneInput.value.trim());
-  const resetCode = resetCodeInput.value.trim();
-  const newPassword = newPasswordInput.value;
-  const confirmNewPassword = confirmNewPasswordInput.value;
-
   forgotMessage.className = "";
-
-  if (!phonePattern.test(phone)) {
-    forgotMessage.textContent = "Merci d'entrer un numéro de téléphone valide.";
-    forgotMessage.classList.add("error");
-    forgotPhoneInput.focus();
-    return;
-  }
-
-  if (!/^\d{6}$/.test(resetCode)) {
-    forgotMessage.textContent = "Le code doit contenir 6 chiffres.";
-    forgotMessage.classList.add("error");
-    resetCodeInput.focus();
-    return;
-  }
-
-  if (newPassword.length < 6) {
-    forgotMessage.textContent = "Le mot de passe doit contenir au moins 6 caractères.";
-    forgotMessage.classList.add("error");
-    newPasswordInput.focus();
-    return;
-  }
-
-  if (newPassword !== confirmNewPassword) {
-    forgotMessage.textContent = "Les mots de passe ne correspondent pas.";
-    forgotMessage.classList.add("error");
-    confirmNewPasswordInput.focus();
-    return;
-  }
-
-  const resetCodes = getResetCodes();
-  const resetEntry = resetCodes[phone];
-
-  if (!resetEntry) {
-    forgotMessage.textContent = "Aucun code actif. Clique sur 'Envoyer le code'.";
-    forgotMessage.classList.add("error");
-    return;
-  }
-
-  if (Date.now() > resetEntry.expiresAt) {
-    delete resetCodes[phone];
-    saveResetCodes(resetCodes);
-    forgotMessage.textContent = "Le code a expiré. Demande un nouveau code.";
-    forgotMessage.classList.add("error");
-    return;
-  }
-
-  if (resetEntry.code !== resetCode) {
-    forgotMessage.textContent = "Code incorrect.";
-    forgotMessage.classList.add("error");
-    resetCodeInput.focus();
-    return;
-  }
-
-  const accounts = getAccounts();
-  const accountIndex = accounts.findIndex((item) => item.phone === phone);
-
-  if (accountIndex === -1) {
-    forgotMessage.textContent = "Aucun compte trouvé avec ce numéro de téléphone.";
-    forgotMessage.classList.add("error");
-    return;
-  }
-
-  accounts[accountIndex].password = newPassword;
-  saveAccounts(accounts);
-  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
-
-  delete resetCodes[phone];
-  saveResetCodes(resetCodes);
-  await (window.skyCloud?.pushNow?.() ?? Promise.resolve());
-
-  forgotMessage.textContent = "Mot de passe réinitialisé avec succès ✅";
+  forgotMessage.textContent = "Utilise le lien reçu par email pour réinitialiser ton mot de passe.";
   forgotMessage.classList.add("success");
-  forgotForm.reset();
-
-  setTimeout(() => {
-    setActiveView("login");
-  }, 700);
 });
 
 const lastEmail = localStorage.getItem(LAST_EMAIL_KEY);
