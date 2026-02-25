@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-label="Sky Car Assistance">
+  <rect width="1200" height="320" fill="none"/>
+
+  <g transform="translate(10,10)">
+    <path fill="#ffffff" d="M164 18l38 0 17 42c11 5 22 11 31 19l44-10 19 33-31 32c2 7 3 14 3 21 0 8-1 16-3 23l31 31-19 33-44-10c-9 8-20 14-31 19l-17 42-38 0-17-42c-11-5-22-11-31-19l-44 10-19-33 31-31c-2-7-3-15-3-23 0-7 1-14 3-21l-31-32 19-33 44 10c9-8 20-14 31-19z"/>
+    <circle cx="183" cy="160" r="126" fill="#f97316"/>
+    <circle cx="183" cy="160" r="96" fill="none" stroke="#ffffff" stroke-width="22"/>
+    <path d="M288 126 L512 136 L420 136 L390 106 L292 106 Z" fill="#f97316"/>
+    <path d="M286 194 L514 184 L418 184 L390 214 L292 214 Z" fill="#f97316"/>
+  </g>
+
+  <text x="255" y="175" fill="#ffffff" font-size="160" font-family="Segoe UI, Arial, sans-serif" font-weight="900" letter-spacing="2">SKY CAR</text>
+  <text x="560" y="260" fill="#f97316" font-size="74" font-family="Segoe UI, Arial, sans-serif" font-weight="800" letter-spacing="7">ASSISTANCE</text>
+</svg>
